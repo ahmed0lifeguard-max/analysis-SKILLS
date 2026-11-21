@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>محلل الحركة الرياضية | قسم التربية البدنية</title>
+<style>
+:root{
+  --bg:#f3f6fb; --card:#ffffff; --ink:#10243a; --muted:#4a5d73; --line:#d3dce8;
+  --primary:#0b5cab; --primary-dark:#093f78; --accent:#b45309; --ok:#0a7d4f; --bad:#b42318;
+  --radius:12px; --shadow:0 2px 10px rgba(16,36,58,.08);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  font-family:'Cairo','Tajawal','IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.7}
+.skip{position:absolute;inset-inline-start:8px;top:-60px;background:#fff;color:var(--primary);padding:8px 14px;border-radius:8px;z-index:50}
+.skip:focus{top:8px}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:var(--s4)}
+header.site{background:linear-gradient(135deg,#093f78,#0b5cab);color:#fff;padding-block:var(--s4)}
+.school{font-size:.92rem;opacity:.96}
+header h1{margin:2px 0 0;font-size:1.65rem;line-height:1.4}
+header .sub{margin:4px 0 0;font-size:1rem;opacity:.95}
+main{padding-block:var(--s4) var(--s6)}
+.grid{display:grid;gap:var(--s4);grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);align-items:start}
+.col{display:grid;gap:var(--s4);min-width:0}
+@media (max-width:1000px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:var(--s4);min-width:0}
+.card+.card.sp{margin-top:var(--s4)}
+.card h2{margin:0 0 var(--s3);font-size:1.18rem;line-height:1.5}
+.muted{color:var(--muted)}
+.small{font-size:.92rem}
+button,.btn{min-height:44px;min-width:44px;padding:8px 16px;border-radius:10px;border:2px solid var(--primary);background:var(--primary);color:#fff;font:inherit;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+button:hover,.btn:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+button.secondary,.btn.secondary{background:#fff;color:var(--primary)}
+button.secondary:hover,.btn.secondary:hover{background:#eaf2fb}
+button.danger{background:#fff;color:var(--bad);border-color:var(--bad)}
+button.danger:hover{background:#fdecea}
+button.rec-on{background:var(--bad);border-color:var(--bad);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid #f5a524;outline-offset:2px}
+input[type=text],input[type=number],select{min-height:44px;padding:8px 12px;border:1.5px solid #8296ad;border-radius:10px;font:inherit;background:#fff;color:var(--ink);max-width:100%}
+input[type=number]{width:96px}
+label{font-weight:600}
+fieldset{border:1px solid var(--line);border-radius:10px;padding:var(--s2) var(--s3) var(--s3);margin:0}
+legend{font-weight:700;padding-inline:6px}
+.opt{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin-inline-end:var(--s4);font-weight:600}
+.opt input{width:20px;height:20px}
+
+/* stage */
+.stage{position:relative;background:#0a1624;border-radius:var(--radius);overflow:hidden;aspect-ratio:16/9}
+.stage canvas{display:block;width:100%;height:100%;object-fit:contain;background:#0a1624}
+.stage-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--s3);padding:var(--s5);text-align:center;color:#fff;background:rgba(10,22,36,.72);font-size:1.1rem}
+.stage-msg[hidden]{display:none}
+.stage-msg .bar{width:min(320px,80%);height:10px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+.stage-msg .bar i{display:block;height:100%;width:0;background:#5ee1ff;transition:width .2s}
+.chip{position:absolute;top:10px;inset-inline-start:10px;background:rgba(10,22,36,.82);color:#fff;border-radius:99px;padding:4px 14px;font-weight:700;font-size:.95rem;border:1px solid rgba(255,255,255,.35)}
+.rec-dot{position:absolute;top:10px;inset-inline-end:10px;background:var(--bad);color:#fff;border-radius:99px;padding:4px 12px;font-weight:700;font-size:.9rem}
+.rec-dot[hidden]{display:none}
+.toast{position:absolute;bottom:14px;inset-inline:14px;margin-inline:auto;width:fit-content;max-width:92%;background:#fff;color:var(--ink);border-radius:12px;padding:8px 18px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.35);text-align:center}
+.toast[hidden]{display:none}
+.controls{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s3);align-items:center}
+.transport{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;margin-top:var(--s3);padding:var(--s2) var(--s3);border:1px dashed var(--line);border-radius:10px}
+.transport[hidden]{display:none}
+.transport input[type=range]{flex:1;min-width:140px;height:44px}
+.hint{margin:var(--s3) 0 0;padding:var(--s2) var(--s3);background:#eef5fc;border-radius:10px;border-inline-start:5px solid var(--primary);font-weight:600}
+.hint.warn{background:#fff6e5;border-color:var(--accent)}
+
+/* live tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s2)}
+@media (max-width:620px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{border:1px solid var(--line);border-radius:10px;padding:var(--s2) var(--s3);background:#fafcff}
+.tile .tl{font-size:.9rem;color:var(--muted);font-weight:600}
+.tile .tv{direction:ltr;text-align:end;unicode-bidi:isolate;font-size:1.7rem;font-weight:800;line-height:1.3;font-variant-numeric:tabular-nums}
+.tile .bar{height:8px;border-radius:99px;background:#e3eaf3;overflow:hidden}
+.tile .bar i{display:block;height:100%;width:0;background:var(--primary)}
+canvas#chart{width:100%;height:150px;display:block;border:1px solid var(--line);border-radius:10px;background:#fcfdff;margin-top:var(--s3)}
+.legend{display:flex;flex-wrap:wrap;gap:var(--s4);margin:var(--s2) 0 0;font-size:.92rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:26px;height:0;border-top:4px solid var(--primary);vertical-align:middle;margin-inline-end:6px}
+.legend .k::before{border-top:4px dashed #0a7d4f}
+
+/* detail */
+.empty{color:var(--muted);margin:0}
+.score-row{display:flex;gap:var(--s4);align-items:center;flex-wrap:wrap}
+.ring{--p:0;width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--ok) calc(var(--p)*1%),#dfe7f1 0);display:grid;place-items:center;flex:none}
+.ring span{width:74px;height:74px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:1.7rem;font-weight:800}
+.ring.mid{background:conic-gradient(var(--accent) calc(var(--p)*1%),#dfe7f1 0)}
+.metric-list{list-style:none;padding:0;margin:var(--s3) 0 0;display:grid;gap:6px}
+.metric-list li{display:flex;gap:10px;align-items:flex-start;padding:6px 10px;border-radius:8px;background:#f5f8fc}
+.metric-list .ic{font-weight:800;width:1.4em;text-align:center;flex:none}
+.metric-list .ok .ic{color:var(--ok)}
+.metric-list .no .ic{color:var(--bad)}
+.metric-list .val{margin-inline-start:auto;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tips{margin:var(--s3) 0 0;padding:var(--s3);background:#fff6e5;border-radius:10px;border-inline-start:5px solid var(--accent)}
+.tips.good{background:#e9f7ef;border-color:var(--ok)}
+.tips h3{margin:0 0 4px;font-size:1rem}
+.tips ul{margin:0;padding-inline-start:20px}
+.thumbs{display:flex;gap:var(--s2);margin-top:var(--s3);flex-wrap:wrap}
+.thumbs figure{margin:0;flex:1;min-width:140px}
+.thumbs img{width:100%;border-radius:8px;border:1px solid var(--line);display:block}
+.thumbs figcaption{font-size:.88rem;color:var(--muted);text-align:center}
+.kv{display:grid;grid-template-columns:1fr auto;gap:2px var(--s3);margin:var(--s3) 0 0;font-size:.95rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:700;text-align:end}
+
+/* table */
+.tbl-wrap{overflow-x:auto}
+table.shots{width:100%;border-collapse:collapse;font-size:.95rem}
+table.shots th,table.shots td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:start;vertical-align:middle}
+table.shots th{background:#eef3f9;font-weight:700;position:sticky;top:0}
+table.shots tr.sel{background:#eaf2fb}
+table.shots tbody tr{cursor:pointer}
+table.shots td img{width:84px;border-radius:6px;display:inline-block;margin-inline-end:4px;border:1px solid var(--line)}
+.cell-ok::before{content:"✓ ";color:var(--ok);font-weight:800}
+.cell-no::before{content:"⚠ ";color:var(--bad);font-weight:800}
+.badge{display:inline-block;padding:2px 12px;border-radius:99px;font-weight:800;border:1.5px solid currentColor}
+.badge.hi{color:var(--ok)} .badge.md{color:var(--accent)} .badge.lo{color:var(--bad)}
+@media screen and (max-width:700px){
+  table.shots thead{display:none}
+  table.shots,table.shots tbody{display:block}
+  table.shots tr{display:block;border:1px solid var(--line);border-radius:10px;margin-bottom:var(--s2);padding:var(--s2) var(--s3)}
+  table.shots td{display:flex;justify-content:space-between;gap:var(--s3);border:0;padding:3px 0}
+  table.shots td::before{content:attr(data-label);color:var(--muted);font-weight:600}
+  .cell-ok::before,.cell-no::before{content:attr(data-label)}
+  table.shots td.imgs{justify-content:flex-start}
+  table.shots td.imgs::before{display:none}
+}
+.actions{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s3)}
+
+/* settings */
+details.card>summary{cursor:pointer;font-weight:800;font-size:1.18rem;min-height:44px;display:flex;align-items:center}
+.set-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s3);margin-top:var(--s3)}
+table.targets{width:100%;border-collapse:collapse;margin-top:var(--s2)}
+table.targets th,table.targets td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:start}
+ul.steps{margin:0;padding-inline-start:22px}
+ul.steps li{margin-bottom:4px}
+footer.site{padding:var(--s5) 0;color:var(--muted);font-size:.92rem;text-align:center}
+.printonly{display:none}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff;font-size:12pt}
+  .noprint,header.site,footer.site,.skip{display:none!important}
+  .printonly{display:block}
+  .card{box-shadow:none;border:1px solid #999;margin-bottom:8mm}
+  .thumbs,.tips,.metric-list li,.score-row{break-inside:avoid}
+  .grid{display:block}
+  .col{display:block}
+  .card.sp{break-inside:auto}
+  table.shots tr{break-inside:avoid}
+  table.shots thead{display:table-header-group}
+  .tbl-wrap{overflow:visible}
+  table.shots th{position:static}
+  table.shots tbody tr{cursor:auto}
+  #printHead{border-bottom:3px solid #093f78;padding-bottom:6px;margin-bottom:10px}
+  #printHead h1{font-size:18pt;margin:0}
+}
+
+[hidden]{display:none!important}
+.act-card{border-inline-start:6px solid var(--primary)}
+.act-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3)}
+.act-label{font-size:1.15rem;font-weight:800}
+.act-select{font-size:1.1rem;font-weight:700;min-width:min(100%,340px);border-color:var(--primary)}
+.legend .mk::before{border-top:3px dotted #b45309}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">انتقل إلى المحتوى</a>
+
+<header class="site noprint">
+  <div class="wrap">
+    <div class="school">مدرسة قطر للعلوم والتكنولوجيا الإعدادية الثانوية للبنين – الصخامة · قسم التربية البدنية</div>
+    <h1>محلل الحركة الرياضية</h1>
+    <p class="sub">كاميرا مفتوحة وهيكل عظمي مباشر وقياس تلقائي لمهارات كرة السلة وكرة اليد وألعاب القوى.</p>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+  <section id="printHead" class="printonly" aria-hidden="true">
+    <div>مدرسة قطر للعلوم والتكنولوجيا الإعدادية الثانوية للبنين – الصخامة · قسم التربية البدنية</div>
+    <h1>تقرير تحليل الحركة — <span id="pAct"></span></h1>
+    <div>اللاعب: <strong id="pName">—</strong> · التاريخ: <span id="pDate"></span> · اليد الرئيسية: <span id="pHand"></span> · زاوية التصوير: <span id="pView"></span></div>
+  </section>
+
+  <section class="card noprint act-card" aria-labelledby="hAct">
+    <div class="act-row">
+      <label for="actSel" id="hAct" class="act-label">اختر المهارة:</label>
+      <select id="actSel" class="act-select">
+        <optgroup label="كرة السلة">
+          <option value="bball">التصويب على السلة</option>
+          <option value="dribble">المحاورة (الطبطبة)</option>
+        </optgroup>
+        <optgroup label="كرة اليد">
+          <option value="handball">التصويب/الرمية فوق الكتف</option>
+          <option value="dribble_hb">المحاورة (التنطيط)</option>
+        </optgroup>
+        <optgroup label="ألعاب القوى">
+          <option value="run">الجري / العدو</option>
+          <option value="long">الوثب الطويل</option>
+          <option value="vjump">الوثب العمودي</option>
+          <option value="pose_sprint">وضع «استعد» في البدء المنخفض</option>
+        </optgroup>
+        <optgroup label="وضعيات">
+          <option value="pose_defense">الوقفة الدفاعية / وضع الاستعداد</option>
+        </optgroup>
+      </select>
+    </div>
+    <details open style="margin-top:8px">
+      <summary class="small" style="font-weight:700;cursor:pointer;min-height:44px;display:flex;align-items:center">طريقة التصوير لهذه المهارة</summary>
+      <ul class="steps" id="actTips"></ul>
+      <p class="small muted" style="margin:8px 0 0">الخصوصية: يُعالَج الفيديو داخل جهازك فقط ولا يُرسَل إلى أي مكان. القياسات تقريبية (كاميرا ثنائية الأبعاد) وهدفها التعلّم والتطوير الذاتي، وليست تقييمًا طبيًا.</p>
+    </details>
+  </section>
+
+  <div class="grid" style="margin-top:var(--s4)">
+    <div class="col">
+
+      <section class="card noprint" aria-labelledby="hStage">
+        <h2 id="hStage">البث المباشر</h2>
+        <div class="stage">
+          <canvas id="view" width="1280" height="720" role="img" aria-label="عرض الكاميرا مع الهيكل العظمي وزوايا المفاصل"></canvas>
+          <div class="chip" id="phase" aria-live="polite">بانتظار التشغيل</div>
+          <div class="rec-dot" id="recDot" hidden>● تسجيل</div>
+          <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+          <div class="stage-msg" id="stageMsg">
+            <div id="stageMsgText">اضغط «تشغيل الكاميرا» للبدء، أو جرّب «تجربة محاكاة»</div>
+            <div class="bar" id="progWrap" hidden><i id="prog"></i></div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="btnCam" type="button">▶ تشغيل الكاميرا</button>
+          <button id="btnFile" type="button" class="secondary">📁 تحليل فيديو مسجَّل</button>
+          <button id="btnSim" type="button" class="secondary">🎬 تجربة محاكاة</button>
+          <button id="btnSnap" type="button" class="secondary" hidden>📸 التقاط الوضعية الآن</button>
+          <button id="btnRec" type="button" class="secondary" disabled>⏺ تسجيل الفيديو</button>
+          <input id="fileIn" type="file" accept="video/*" hidden>
+          <label for="camSel" class="small muted" id="camSelLbl" hidden>الكاميرا:</label>
+          <select id="camSel" hidden aria-label="اختيار الكاميرا"></select>
+        </div>
+
+        <div class="transport" id="transport" hidden>
+          <button id="tPlay" type="button" class="secondary" aria-label="تشغيل أو إيقاف مؤقت">⏯</button>
+          <input id="tSeek" type="range" min="0" max="1000" value="0" aria-label="موضع الفيديو">
+          <span id="tTime" class="small" style="min-width:90px;text-align:center">0:00</span>
+          <label for="tSpeed" class="small">السرعة:</label>
+          <select id="tSpeed">
+            <option value="0.25">0.25× (بطيئة جدًا)</option>
+            <option value="0.5" selected>0.5× (بطيئة)</option>
+            <option value="1">1× (عادية)</option>
+          </select>
+        </div>
+
+        <p class="hint" id="hint">ظهّر جسمك كاملًا من الرأس إلى القدمين في الإطار.</p>
+      </section>
+
+      <section class="card noprint" aria-labelledby="hLive">
+        <h2 id="hLive">القياسات اللحظية</h2>
+        <div class="tiles">
+          <div class="tile"><div class="tl">زاوية المرفق</div><div class="tv"><span id="vElbow">–</span>°</div><div class="bar"><i id="bElbow"></i></div></div>
+          <div class="tile"><div class="tl">زاوية الركبة</div><div class="tv"><span id="vKnee">–</span>°</div><div class="bar"><i id="bKnee"></i></div></div>
+          <div class="tile"><div class="tl">زاوية الكتف</div><div class="tv"><span id="vShoulder">–</span>°</div><div class="bar"><i id="bShoulder"></i></div></div>
+          <div class="tile"><div class="tl">ميل الجذع</div><div class="tv"><span id="vLean">–</span>°</div><div class="bar"><i id="bLean"></i></div></div>
+        </div>
+        <canvas id="chart" aria-label="رسم بياني لزوايا المفاصل خلال آخر 6 ثوانٍ" role="img"></canvas>
+        <div class="legend" id="legend"></div>
+      </section>
+
+    </div>
+
+    <div class="col">
+      <section class="card" aria-labelledby="hDetail">
+        <h2 id="hDetail">تحليل المحاولة</h2>
+        <div id="detail" aria-live="polite"></div>
+      </section>
+
+      <section class="card" aria-labelledby="hSum">
+        <h2 id="hSum">ملخص الجلسة</h2>
+        <div id="summary"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card sp" aria-labelledby="hShots">
+    <h2 id="hShots">سجل المحاولات</h2>
+    <div class="tbl-wrap">
+      <table class="shots" id="shotsTbl">
+        <thead id="shotsHead"></thead>
+        <tbody id="shotsBody"></tbody>
+      </table>
+    </div>
+    <div class="actions noprint">
+      <button id="btnCsv" type="button" class="secondary">⬇ تصدير Excel / CSV</button>
+      <button id="btnPrint" type="button" class="secondary">🖨 طباعة / حفظ PDF</button>
+      <button id="btnClear" type="button" class="danger">🗑 مسح محاولات هذه المهارة</button>
+    </div>
+    <p class="small muted printonly">القيم المرجعية المستخدمة تعليمية وقابلة للتعديل من المعلّم؛ القياسات تقريبية.</p>
+  </section>
+
+  <details class="card sp noprint" id="settings" open>
+    <summary>الإعدادات</summary>
+    <div class="set-grid">
+      <div>
+        <label for="pname">اسم اللاعب أو رمزه (اختياري)</label><br>
+        <input type="text" id="pname" maxlength="40" placeholder="مثال: طالب 7A-12">
+        <div class="small muted">يُستخدم في التقرير فقط، ولا يُحفظ خارج جهازك.</div>
+      </div>
+      <div>
+        <label for="hgt">طول اللاعب بالسنتيمتر (مُستحسن)</label><br>
+        <input type="number" id="hgt" min="120" max="220" placeholder="165">
+        <div class="small muted">لتحويل المسافة والسرعة وارتفاع القفز إلى متر وسنتيمتر تقريبيًا.</div>
+      </div>
+      <fieldset><legend>اليد الرئيسية (الرمي / المحاورة)</legend>
+        <label class="opt"><input type="radio" name="hand" value="right"> اليمنى</label>
+        <label class="opt"><input type="radio" name="hand" value="left"> اليسرى</label>
+      </fieldset>
+      <fieldset><legend>زاوية التصوير</legend>
+        <label class="opt"><input type="radio" name="view" value="side"> جانبية (مُوصى بها)</label>
+        <label class="opt"><input type="radio" name="view" value="front"> أمامية</label>
+      </fieldset>
+      <fieldset><legend>العرض</legend>
+        <label class="opt"><input type="radio" name="display" value="video"> فيديو + هيكل</label>
+        <label class="opt"><input type="radio" name="display" value="skeleton"> هيكل فقط (يُخفي الوجه)</label>
+      </fieldset>
+      <div>
+        <label for="modelSel">دقة النموذج</label><br>
+        <select id="modelSel">
+          <option value="lite">سريع (مناسب لمعظم الأجهزة)</option>
+          <option value="full">أدق (يحتاج جهازًا أقوى)</option>
+        </select>
+      </div>
+      <div>
+        <label class="opt"><input type="checkbox" id="optSound"> صوت تنبيه عند كل محاولة</label><br>
+        <label class="opt"><input type="checkbox" id="optMirror"> عرض كالمرآة</label>
+      </div>
+    </div>
+    <h3 style="margin:var(--s4) 0 0;font-size:1.05rem">النطاقات المرجعية للمهارة المختارة (قابلة للتعديل)</h3>
+    <p class="small muted" style="margin:4px 0">قيم إرشادية تعليمية وليست معيارًا رسميًا؛ عدّلها بحسب عمر طلابك ومستواهم.</p>
+    <div class="tbl-wrap"><table class="targets" id="targetsTbl"></table></div>
+    <div class="actions"><button type="button" class="secondary" id="btnResetTargets">إعادة القيم الافتراضية لهذه المهارة</button></div>
+  </details>
+
+</main>
+
+<footer class="site noprint">
+  قسم التربية البدنية — مدرسة قطر للعلوم والتكنولوجيا الإعدادية الثانوية للبنين – الصخامة · العام الدراسي 2026–2027
+</footer>
+
+<video id="vid" playsinline muted style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></video>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= أدوات عامة ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const median = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const quant = (a, p) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
+const sdev = a => { if (a.length < 2) return null; const m = mean(a); return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)); };
+const rnd = v => Math.round(v);
+const nn = a => a.filter(v => v != null && !isNaN(v));
+const maxOf = a => { a = nn(a); return a.length ? Math.max(...a) : null; };
+const minOf = a => { a = nn(a); return a.length ? Math.min(...a) : null; };
+const bd = x => `<bdi dir="ltr">${x}</bdi>`;
+const stripTags = s => String(s).replace(/<[^>]+>/g, '');
+
+/* ================= الإعدادات ================= */
+const KEY = 'qstss_motion_multi_v2';
+const DEF = { act: 'bball', name: '', hand: 'right', view: 'side', display: 'video', model: 'lite', height: '', sound: true, mirror: true, targets: {} };
+let S = Object.assign({}, DEF);
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign({}, DEF, JSON.parse(raw)); } catch (e) {}
+function saveS() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* ================= تنسيق القيم ================= */
+const torsoM = () => { const h = +S.height; return (h >= 120 && h <= 220) ? 0.288 * h / 100 : null; }; // متر لكل «طول جذع» تقريبًا
+const fDeg = v => v == null ? '—' : bd(rnd(v) + '°');
+const fMs = v => v == null ? '—' : bd(rnd(v)) + ' م.ث';
+const fLen = v => { if (v == null) return '—'; const m = torsoM(); return m ? '≈ ' + bd((v * m).toFixed(2)) + ' م' : bd(v.toFixed(1)) + ' × الجذع'; };
+const fSpeed = v => { if (v == null) return '—'; const m = torsoM(); return m ? '≈ ' + bd((v * m).toFixed(1)) + ' م/ث' : bd(v.toFixed(1)) + ' جذع/ث'; };
+const fCm = v => v == null ? '—' : '≈ ' + bd(rnd(v)) + ' سم';
+const fHz = v => v == null ? '—' : bd(v.toFixed(1)) + ' مرة/ث';
+const fInt = v => v == null ? '—' : bd(rnd(v));
+const fRise = v => { if (v == null) return '—'; if (v < 0.06) return 'بدون قفز'; const m = torsoM(); return m ? '≈ ' + bd(rnd(v * m * 100)) + ' سم' : bd(rnd(v * 100) + '%') + ' من الجذع'; };
+
+/* ================= المهارات ================= */
+const M = (k, label, short, unit, min, max, low, high, o = {}) => Object.assign({ k, label, short, unit, scale: unit === '%' ? 100 : 1, min, max, low, high }, o);
+const X = (k, label, short, fmt) => ({ k, label, short, fmt });
+
+const DRIBBLE = {
+  kind: 'dribble', ev: 'مقطع محاورة', evT: 'مقطع المحاورة', evs: 'مقاطع المحاورة', view: 'side', thumbs: ['بداية المقطع', 'نهاية المقطع'],
+  tips: ['صوّر من الجانب أو بزاوية مائلة قليلًا على بعد 3–4 م، ويظهر الجسم كاملًا.', 'حدّد «اليد الرئيسية» في الإعدادات (اليد التي تحاور بها).', 'حاور في مكانك؛ كل 8 ارتدادات تُحلَّل تلقائيًا كمقطع.'],
+  metrics: [
+    M('kneeMean', 'متوسط زاوية الركبة (الانخفاض)', 'الركبة', '°', 105, 150, 'ثني الركبتين كبير جدًا؛ ارتفع قليلًا لتتحرك بسرعة.', 'ركبتاك شبه مفرودتين؛ انخفض بوضع رياضي لتحمي الكرة.'),
+    M('leanMean', 'ميل الجذع للأمام', 'الجذع', '°', 8, 35, 'الجذع عمودي؛ أمِل للأمام قليلًا مع إبقاء الرأس مرفوعًا.', 'ميل الجذع كبير؛ ارفع جذعك ورأسك قليلًا لترى الملعب.'),
+    M('handTop', 'أعلى ارتفاع لليد فوق الورك', 'ارتفاع اليد', '%', -100, 30, '', 'ترتفع اليد كثيرًا؛ اجعل ارتداد الكرة بمستوى الخصر أو أقل.'),
+    M('regularity', 'انتظام الإيقاع (معامل الاختلاف)', 'الانتظام', '%', 0, 15, '', 'إيقاع المحاورة غير منتظم؛ تدرّب على إيقاع ثابت.', { scale: 1 })
+  ],
+  extras: [X('rate', 'معدّل المحاورة', 'المعدّل', fHz), X('count', 'عدد الارتدادات المحلّلة', 'العدد', fInt)],
+  chart: [['elbow', 'زاوية مرفق اليد المحاورة'], ['knee', 'زاوية الركبة']]
+};
+
+const ACTS = {
+  bball: {
+    group: 'كرة السلة', label: 'التصويب على السلة', kind: 'shot', ev: 'تصويبة', evs: 'التصويبات', view: 'side', thumbs: ['نقطة الإعداد', 'لحظة الإفلات'], hoop: true,
+    tips: ['ضع الكاميرا على حامل ثابت من جانب اللاعب، على بعد 3–4 م وبارتفاع الخصر.', 'يجب أن يظهر الجسم كاملًا من الرأس إلى القدمين.', 'صوّب بشكل طبيعي؛ كل تصويبة تُسجَّل وتُحلَّل تلقائيًا.'],
+    metrics: [
+      M('kneeLoad', 'ثني الركبة (أدنى زاوية)', 'ثني الركبة', '°', 95, 135, 'ثني الركبة عميق جدًا؛ ارتفع قليلًا لتسريع الحركة.', 'ثني الركبة قليل؛ انزل بركبتيك أكثر لتستمد قوة من الساقين.'),
+      M('elbowSet', 'زاوية المرفق عند الإعداد', 'المرفق (إعداد)', '°', 70, 110, 'المرفق مثني أكثر من اللازم عند الإعداد؛ اجعله قريبًا من 90°.', 'المرفق مفتوح عند الإعداد؛ قرّب الكرة من الجبهة واثنِ المرفق قرب 90°.'),
+      M('elbowRelease', 'فرد المرفق عند الإفلات', 'المرفق (إفلات)', '°', 155, 180, 'افرد مرفقك بالكامل عند الإفلات وتابع الحركة بالمعصم.', ''),
+      M('releaseHeight', 'ارتفاع الإفلات فوق الرأس', 'ارتفاع الإفلات', '%', 20, 250, 'نقطة الإفلات منخفضة؛ أطلق الكرة أعلى من مستوى الرأس.', ''),
+      M('kneeRelease', 'فرد الركبة عند الإفلات', 'الركبة (إفلات)', '°', 155, 180, 'افرد ركبتيك مع الصعود لتنقل قوة الساقين إلى الكرة.', ''),
+      M('elbowAlign', 'محاذاة المرفق مع الكتف (زاوية أمامية)', 'محاذاة المرفق', '%', 0, 25, '', 'المرفق يبتعد عن خط الكتف؛ اجعله تحت الكرة وباتجاه السلة.', { frontOnly: true })
+    ],
+    extras: [X('jump', 'ارتفاع القفز', 'القفز', fRise), X('duration', 'زمن الحركة (من أدنى نقطة للإفلات)', 'الزمن', fMs), X('armLean', 'ميل الذراع عن العمودي عند الإفلات', 'ميل الذراع', fDeg)],
+    chart: [['elbow', 'زاوية المرفق'], ['knee', 'زاوية الركبة']]
+  },
+  handball: {
+    group: 'كرة اليد', label: 'التصويب/الرمية فوق الكتف', kind: 'shot', ev: 'رمية', evs: 'الرميات', view: 'side', thumbs: ['وضع التجهيز', 'لحظة الإفلات'],
+    tips: ['صوّر من جانب ذراع الرمي، على بعد 4–5 م، ويظهر الجسم كاملًا.', 'يصلح للتصويب من الثبات أو بالارتقاء، وللتمرير الطويل فوق الكتف.', 'أدخل طول اللاعب في الإعدادات لتقدير سرعة اليد بالمتر/ثانية.'],
+    metrics: [
+      M('elbowSet', 'زاوية المرفق في وضع التجهيز', 'المرفق (تجهيز)', '°', 75, 120, 'المرفق مثني كثيرًا عند التجهيز؛ افتحه قليلًا ليكبر مدى الحركة.', 'المرفق مفتوح عند التجهيز؛ اثنِه قرب 90–100° وارفعه بمستوى الكتف.'),
+      M('elbowRelease', 'فرد المرفق عند الإفلات', 'المرفق (إفلات)', '°', 145, 180, 'افرد ذراعك أكثر لحظة ترك الكرة.', ''),
+      M('shoulderRelease', 'ارتفاع الذراع عند الإفلات (زاوية الكتف)', 'زاوية الكتف', '°', 130, 180, 'الذراع منخفضة عند الإفلات؛ ارمِ من فوق الكتف والرأس.', ''),
+      M('releaseHeight', 'ارتفاع الإفلات فوق الرأس', 'ارتفاع الإفلات', '%', 10, 250, 'نقطة الإفلات منخفضة؛ ارفع الكرة فوق مستوى الرأس.', ''),
+      M('leanRelease', 'ميل الجذع عند الإفلات', 'ميل الجذع', '°', 5, 35, 'الجذع ثابت؛ استخدم دوران الجذع وميله للأمام لزيادة القوة.', 'ميل الجذع كبير؛ حافظ على توازنك أثناء الرمي.')
+    ],
+    extras: [X('handSpeed', 'سرعة اليد لحظة الإفلات', 'سرعة اليد', fSpeed), X('jump', 'ارتفاع الارتقاء', 'الارتقاء', fRise), X('duration', 'زمن الحركة', 'الزمن', fMs)],
+    chart: [['elbow', 'زاوية المرفق'], ['shoulder', 'زاوية الكتف']]
+  },
+  dribble: Object.assign({ group: 'كرة السلة', label: 'المحاورة (الطبطبة)' }, DRIBBLE),
+  dribble_hb: Object.assign({ group: 'كرة اليد', label: 'المحاورة (التنطيط)' }, DRIBBLE),
+  run: {
+    group: 'ألعاب القوى', label: 'الجري / العدو', kind: 'run', ev: 'مقطع جري', evT: 'مقطع الجري', evs: 'مقاطع الجري', view: 'side', thumbs: ['بداية المقطع', 'نهاية المقطع'],
+    tips: ['ثبّت الكاميرا عموديًا على مسار الجري على بعد 6–8 م، ولا تحرّكها.', 'يمرّ العدّاء عرضيًا أمام الكاميرا ويظهر جسمه كاملًا لمسافة 8 خطوات على الأقل (أو اجرِ في المكان).', 'أدخل طول اللاعب لتقدير السرعة بالمتر/ثانية.'],
+    metrics: [
+      M('cadence', 'إيقاع الخطوات', 'الإيقاع', ' خطوة/د', 150, 220, 'إيقاع الخطوات بطيء؛ قصّر الخطوة وأسرع في تحريك القدمين.', 'إيقاع سريع جدًا؛ تأكد أن الخطوة ليست قصيرة أكثر من اللازم.'),
+      M('kneeLift', 'رفع الركبة (زاوية الفخذ للأمام)', 'رفع الركبة', '°', 45, 100, 'ارفع ركبتك للأمام أكثر في مرحلة المرجحة.', ''),
+      M('lean', 'ميل الجذع للأمام', 'ميل الجذع', '°', 2, 20, 'الجذع مائل للخلف أو عمودي تمامًا؛ أمِل للأمام قليلًا من الكاحلين.', 'ميل الجذع للأمام كبير؛ ارفع صدرك قليلًا.'),
+      M('elbowMean', 'زاوية المرفق أثناء مرجحة الذراعين', 'المرفق', '°', 70, 115, 'المرفق مثني كثيرًا؛ اجعله قرب 90°.', 'الذراع مفرودة؛ اثنِ المرفق قرب 90° ومرجح من الكتف.'),
+      M('regularity', 'انتظام الخطوات (معامل الاختلاف)', 'الانتظام', '%', 0, 10, '', 'زمن الخطوات غير منتظم؛ حافظ على إيقاع ثابت.', { scale: 1 }),
+      M('asym', 'الفرق بين الرجلين في رفع الركبة', 'التناظر', '%', 0, 15, '', 'هناك فرق واضح بين الرجلين؛ ركّز على رفع الركبة الأضعف.', { scale: 1 })
+    ],
+    extras: [X('speed', 'السرعة التقريبية', 'السرعة', fSpeed), X('armSwing', 'مدى مرجحة الذراع', 'مرجحة الذراع', fDeg), X('steps', 'عدد الخطوات المحلّلة', 'الخطوات', fInt)],
+    chart: [['kneeL', 'الركبة اليسرى'], ['kneeR', 'الركبة اليمنى']]
+  },
+  long: {
+    group: 'ألعاب القوى', label: 'الوثب الطويل', kind: 'jump', ev: 'وثبة', evs: 'الوثبات', view: 'side', thumbs: ['لحظة الارتقاء', 'لحظة الهبوط'], simScale: 0.12,
+    tips: ['ضع الكاميرا عموديًا على منطقة الارتقاء والحفرة، على بعد 8–10 م، ولا تحرّكها.', 'يجب أن تظهر آخر 3 خطوات من الاقتراب ولوحة الارتقاء والهبوط كاملة في الإطار.', 'أدخل طول اللاعب لتقدير مسافة الوثبة وسرعة الاقتراب بالمتر.'],
+    metrics: [
+      M('takeoffAngle', 'زاوية الارتقاء (اتجاه الانطلاق)', 'زاوية الارتقاء', '°', 15, 30, 'الانطلاق أفقي أكثر من اللازم؛ ارفع ركبة الحركة وانطلق للأعلى أكثر.', 'الانطلاق عمودي أكثر من اللازم؛ وجّه الحركة للأمام وحافظ على سرعة الاقتراب.'),
+      M('takeoffKnee', 'فرد رجل الارتقاء', 'رجل الارتقاء', '°', 150, 180, 'افرد رجل الارتقاء بالكامل لحظة ترك اللوحة.', ''),
+      M('driveKnee', 'زاوية ركبة رجل الحركة', 'رجل الحركة', '°', 60, 115, 'ركبة رجل الحركة مثنية جدًا.', 'ارفع ركبة رجل الحركة للأمام والأعلى بزاوية قرب 90°.'),
+      M('leanTakeoff', 'ميل الجذع عند الارتقاء', 'الجذع (ارتقاء)', '°', 0, 20, '', 'الجذع مائل كثيرًا عند الارتقاء؛ حافظ على جذع شبه عمودي.'),
+      M('kneeLanding', 'ثني الركبة عند الهبوط', 'الركبة (هبوط)', '°', 60, 135, 'ثني مبالغ فيه عند الهبوط؛ حافظ على توازنك.', 'اثنِ ركبتيك عند الهبوط لامتصاص الصدمة وحماية المفاصل.')
+    ],
+    extras: [X('dist', 'المسافة التقريبية (إزاحة الورك)', 'المسافة', fLen), X('approach', 'سرعة الاقتراب التقريبية', 'سرعة الاقتراب', fSpeed), X('flight', 'زمن الطيران', 'الطيران', fMs), X('jumpH', 'ارتفاع الطيران المكافئ', 'الارتفاع', fCm)],
+    chart: [['kneeL', 'الركبة اليسرى'], ['kneeR', 'الركبة اليمنى']]
+  },
+  vjump: {
+    group: 'ألعاب القوى', label: 'الوثب العمودي', kind: 'jump', vertical: true, ev: 'وثبة', evs: 'الوثبات', view: 'side', thumbs: ['لحظة الارتقاء', 'لحظة الهبوط'],
+    tips: ['صوّر من الجانب على بعد 3–4 م، والقدمان ظاهرتان بوضوح.', 'قف ثابتًا ثانيتين قبل كل وثبة، ثم اثنِ ركبتيك واقفز للأعلى بأقصى قوة.', 'ارتفاع الوثب يُحسب من زمن الطيران (لا يحتاج معايرة).'],
+    metrics: [
+      M('kneeLoad', 'عمق ثني الركبة قبل الوثب', 'ثني الركبة', '°', 85, 130, 'الثني عميق جدًا؛ قلّل النزول قليلًا لتسريع الارتداد.', 'الثني قليل؛ انزل أكثر لتستفيد من قوة الساقين.'),
+      M('takeoffKnee', 'فرد الركبتين عند الارتقاء', 'فرد الركبة', '°', 155, 180, 'افرد ركبتيك وكاحليك بالكامل لحظة الارتقاء.', ''),
+      M('leanTakeoff', 'ميل الجذع عند الارتقاء', 'الجذع', '°', 0, 25, '', 'الجذع مائل كثيرًا؛ اقفز عموديًا مع مرجحة الذراعين للأعلى.'),
+      M('kneeLanding', 'ثني الركبة عند الهبوط', 'الركبة (هبوط)', '°', 60, 140, 'ثني مبالغ فيه عند الهبوط.', 'اثنِ ركبتيك عند الهبوط لامتصاص الصدمة وحماية المفاصل.')
+    ],
+    extras: [X('jumpH', 'ارتفاع الوثب (من زمن الطيران)', 'الارتفاع', fCm), X('flight', 'زمن الطيران', 'الطيران', fMs), X('hipRise', 'ارتفاع الورك', 'ارتفاع الورك', fRise)],
+    chart: [['kneeL', 'الركبة اليسرى'], ['kneeR', 'الركبة اليمنى']]
+  },
+  pose_sprint: {
+    group: 'ألعاب القوى', label: 'وضع «استعد» في البدء المنخفض', kind: 'pose', ev: 'لقطة', evs: 'اللقطات', view: 'side', thumbs: ['الوضعية'],
+    tips: ['صوّر من الجانب على بعد 3–4 م بارتفاع منخفض (قرب مستوى الورك).', 'اتخذ وضع «استعد» واثبت ثانية واحدة؛ تُلتقط الوضعية تلقائيًا (أو اضغط «التقاط الوضعية الآن»).', 'تحرّك ثم عُد للوضعية لالتقاط محاولة جديدة.'],
+    metrics: [
+      M('kneeMin', 'زاوية الركبة الأمامية', 'الركبة الأمامية', '°', 80, 105, 'الركبة الأمامية مثنية أكثر من اللازم؛ ارفع الوركين قليلًا.', 'الركبة الأمامية مفتوحة؛ اجعلها قرب 90°.'),
+      M('kneeMax', 'زاوية الركبة الخلفية', 'الركبة الخلفية', '°', 110, 140, 'الركبة الخلفية مثنية كثيرًا؛ ارفع الوركين.', 'الركبة الخلفية مفرودة؛ اثنها قرب 120–130°.')
+    ],
+    extras: [X('hip', 'متوسط زاوية الورك', 'الورك', fDeg), X('lean', 'ميل الجذع عن العمودي', 'الجذع', fDeg)],
+    chart: [['kneeL', 'الركبة اليسرى'], ['kneeR', 'الركبة اليمنى']]
+  },
+  pose_defense: {
+    group: 'وضعيات', label: 'الوقفة الدفاعية / وضع الاستعداد', kind: 'pose', ev: 'لقطة', evs: 'اللقطات', view: 'side', thumbs: ['الوضعية'],
+    tips: ['صوّر من الجانب (أو من الأمام لقياس عرض القاعدة) على بعد 3–4 م.', 'اتخذ الوقفة الدفاعية واثبت ثانية واحدة؛ تُلتقط تلقائيًا.', 'تصلح لكرة السلة وكرة اليد ووضع الاستعداد في الألعاب.'],
+    metrics: [
+      M('kneeMin', 'ثني الركبة (الرجل الأكثر ثنيًا)', 'الركبة 1', '°', 100, 145, 'ثني مبالغ فيه؛ ارتفع قليلًا لتتحرك بسرعة.', 'اثنِ ركبتيك أكثر لتنخفض في وضع رياضي.'),
+      M('kneeMax', 'ثني الركبة (الرجل الأخرى)', 'الركبة 2', '°', 100, 155, 'ثني مبالغ فيه؛ ارتفع قليلًا.', 'الرجل الأخرى شبه مفرودة؛ وزّع الثني على الرجلين.'),
+      M('lean', 'ميل الجذع للأمام', 'الجذع', '°', 10, 35, 'الجذع عمودي؛ أمِل للأمام قليلًا مع ظهر مستقيم.', 'ميل الجذع كبير؛ ارفع الصدر والرأس.'),
+      M('spread', 'عرض القاعدة (بين القدمين)', 'عرض القاعدة', '%', 80, 200, 'القدمان متقاربتان؛ افتحهما بعرض الكتفين أو أكثر قليلًا.', 'القاعدة واسعة جدًا؛ قرّب القدمين قليلًا.', { frontOnly: true })
+    ],
+    extras: [X('hip', 'متوسط زاوية الورك', 'الورك', fDeg)],
+    chart: [['kneeL', 'الركبة اليسرى'], ['kneeR', 'الركبة اليمنى']]
+  }
+};
+if (!ACTS[S.act]) S.act = 'bball';
+const ACT = (ak = S.act) => ACTS[ak];
+const tgtOf = (ak, m) => S.targets[ak + '.' + m.k] || { min: m.min, max: m.max };
+const visMetrics = (ak = S.act) => ACT(ak).metrics.filter(m => !m.frontOnly || S.view === 'front');
+
+/* ================= عناصر الصفحة والحالة ================= */
+const cv = $('#view'), ctx = cv.getContext('2d');
+const vid = $('#vid');
+const chartCv = $('#chart');
+const A = {
+  source: null, stream: null, lmk: null, lmkVariant: null, loading: null,
+  loopOn: false, lastTs: 0, lastT: null, sm: null, miss: 0, trail: [],
+  events: [], sel: null, marks: [], simT: 0, simLast: 0, simAcc: 0, wake: null, lastUi: 0, lastFeat: null
+};
+const curEvents = () => A.events.filter(e => e.ak === S.act);
+
+/* ================= رسائل وواجهة ================= */
+function stageMsg(text, show = true, prog = null) {
+  $('#stageMsg').hidden = !show;
+  $('#stageMsgText').textContent = text || '';
+  const pw = $('#progWrap');
+  if (prog === null) pw.hidden = true; else { pw.hidden = false; $('#prog').style.width = clamp(prog * 100, 2, 100) + '%'; }
+}
+let toastTimer = null;
+function toast(html, ms = 3500) { const t = $('#toast'); t.innerHTML = html; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, ms); }
+function setHint(text, warn = false) { const h = $('#hint'); if (h.textContent !== text) h.textContent = text; h.classList.toggle('warn', warn); }
+function setPhase(text) { const p = $('#phase'); if (p.textContent !== text) p.textContent = text; }
+
+/* ================= تحميل النموذج ================= */
+const VER = '0.10.14';
+const CDNS = [`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VER}`, `https://unpkg.com/@mediapipe/tasks-vision@${VER}`];
+const MODELS = {
+  lite: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+  full: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task'
+};
+const CACHE = 'qstss-motion-v1';
+let libCache = null;
+
+async function getBytes(url, label, weight = [0, 1]) {
+  let cache = null;
+  try { if (window.caches) { cache = await caches.open(CACHE); const hit = await cache.match(url); if (hit) return await hit.arrayBuffer(); } } catch (e) { cache = null; }
+  stageMsg(label, true, weight[0]);
+  const res = await fetch(url, { mode: 'cors' });
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + url);
+  const total = +res.headers.get('content-length') || 0;
+  const reader = res.body && res.body.getReader ? res.body.getReader() : null;
+  let buf;
+  if (reader) {
+    const chunks = []; let got = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value); got += value.length;
+      if (total) stageMsg(label, true, weight[0] + (weight[1] - weight[0]) * Math.min(1, got / total));
+    }
+    buf = new Uint8Array(got); let o = 0; for (const c of chunks) { buf.set(c, o); o += c.length; }
+  } else buf = new Uint8Array(await res.arrayBuffer());
+  try { if (cache) await cache.put(url, new Response(buf, { headers: { 'content-type': 'application/octet-stream' } })); } catch (e) {}
+  return buf.buffer;
+}
+const blobUrl = (buf, type) => URL.createObjectURL(new Blob([buf], { type }));
+
+async function loadLib() {
+  if (libCache) return libCache;
+  let lastErr;
+  for (const base of CDNS) {
+    try {
+      const js = await getBytes(base + '/vision_bundle.mjs', 'جارٍ تحميل مكتبة التحليل…', [0.02, 0.1]);
+      const mod = await import(blobUrl(js, 'text/javascript'));
+      const raw = await mod.FilesetResolver.forVisionTasks(base + '/wasm');
+      const wl = await getBytes(raw.wasmLoaderPath, 'جارٍ تحميل محرك التحليل…', [0.1, 0.2]);
+      const wb = await getBytes(raw.wasmBinaryPath, 'جارٍ تحميل محرك التحليل…', [0.2, 0.55]);
+      libCache = { mod, raw, blobSet: { wasmLoaderPath: blobUrl(wl, 'text/javascript'), wasmBinaryPath: blobUrl(wb, 'application/wasm') } };
+      return libCache;
+    } catch (e) { lastErr = e; console.warn('CDN failed', base, e); }
+  }
+  throw lastErr || new Error('lib');
+}
+
+async function ensureModel() {
+  const variant = S.model;
+  if (A.lmk && A.lmkVariant === variant) return;
+  if (A.loading) return A.loading;
+  A.loading = (async () => {
+    try {
+      stageMsg('جارٍ تحميل نموذج تحليل الحركة (يحدث مرة واحدة فقط)…', true, 0.02);
+      const lib = await loadLib();
+      const model = await getBytes(MODELS[variant], 'جارٍ تحميل نموذج تحليل الحركة…', [0.55, 0.95]);
+      stageMsg('جارٍ تجهيز النموذج…', true, 0.97);
+      const mk = (fs, delegate) => lib.mod.PoseLandmarker.createFromOptions(fs, {
+        baseOptions: { modelAssetBuffer: new Uint8Array(model), delegate },
+        runningMode: 'VIDEO', numPoses: 1,
+        minPoseDetectionConfidence: 0.5, minPosePresenceConfidence: 0.5, minTrackingConfidence: 0.5
+      });
+      let lmk = null, lastErr;
+      for (const fs of [lib.blobSet, lib.raw]) {
+        for (const d of ['GPU', 'CPU']) { try { lmk = await mk(fs, d); break; } catch (e) { lastErr = e; console.warn('init failed', d, e); } }
+        if (lmk) break;
+      }
+      if (!lmk) throw lastErr;
+      if (A.lmk) { try { A.lmk.close(); } catch (e) {} }
+      A.lmk = lmk; A.lmkVariant = variant; A.lastTs = 0;
+    } finally { A.loading = null; }
+  })();
+  return A.loading;
+}
+
+/* ================= الكاميرا والمصادر ================= */
+function setCanvasSize(w, h) { if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; } ring.length = 0; ringI = 0; }
+
+function resetAnalysis() { H.reset(); D = makeDet(); A.sm = null; A.trail = []; A.lastT = null; A.lastFeat = null; }
+
+function stopAll() {
+  A.loopOn = false;
+  if (A.stream) { A.stream.getTracks().forEach(t => t.stop()); A.stream = null; }
+  try { vid.pause(); } catch (e) {}
+  if (vid.src && vid.src.startsWith('blob:')) { try { URL.revokeObjectURL(vid.src); } catch (e) {} }
+  vid.srcObject = null; vid.removeAttribute('src'); try { vid.load(); } catch (e) {}
+  if (rec) { try { rec.stop(); } catch (e) {} }
+  if (A.wake) { try { A.wake.release(); } catch (e) {} A.wake = null; }
+  A.source = null;
+  resetAnalysis();
+  $('#transport').hidden = true;
+  $('#btnCam').textContent = '▶ تشغيل الكاميرا';
+  $('#btnSim').textContent = '🎬 تجربة محاكاة';
+  $('#btnRec').disabled = true;
+  setPhase('بانتظار التشغيل');
+  stageMsg('اضغط «تشغيل الكاميرا» للبدء، أو جرّب «تجربة محاكاة»', true);
+  resetLive();
+}
+
+async function startCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    stageMsg('هذا المتصفح لا يدعم الكاميرا في هذه الصفحة. افتح الصفحة عبر رابط آمن (https) في متصفح حديث مثل Chrome أو Edge.', true);
+    return;
+  }
+  stopAll(); initAudio();
+  stageMsg('جارٍ طلب إذن الكاميرا…', true);
+  try {
+    const sel = $('#camSel').value;
+    const video = { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } };
+    if (sel) video.deviceId = { exact: sel }; else video.facingMode = 'user';
+    A.stream = await navigator.mediaDevices.getUserMedia({ video, audio: false });
+  } catch (e) {
+    console.warn(e);
+    const msg = e && e.name === 'NotAllowedError' ? 'تم رفض إذن الكاميرا. اسمح بالوصول للكاميرا من شريط العنوان ثم أعد المحاولة.'
+      : e && e.name === 'NotFoundError' ? 'لم يتم العثور على كاميرا في هذا الجهاز.'
+      : e && e.name === 'NotReadableError' ? 'الكاميرا مستخدمة في برنامج آخر. أغلقه ثم أعد المحاولة.'
+      : 'تعذّر تشغيل الكاميرا: ' + (e && e.message ? e.message : 'خطأ غير معروف');
+    stageMsg(msg, true); return;
+  }
+  vid.srcObject = A.stream;
+  try { await vid.play(); } catch (e) {}
+  await new Promise(r => { if (vid.videoWidth) r(); else vid.onloadedmetadata = () => r(); });
+  A.source = 'camera';
+  setCanvasSize(vid.videoWidth, vid.videoHeight);
+  S.mirror = true; $('#optMirror').checked = true;
+  fillCameras();
+  try { await ensureModel(); } catch (e) { modelFailed(e); stopAllKeepMsg(); return; }
+  stageMsg('', false);
+  $('#btnCam').textContent = '⏹ إيقاف الكاميرا';
+  $('#btnRec').disabled = false;
+  try { if (navigator.wakeLock) A.wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+  startLoop();
+}
+function modelFailed(e) {
+  console.error(e);
+  stageMsg('تعذّر تحميل نموذج التحليل. تأكد من اتصال الإنترنت (مطلوب مرة واحدة فقط على هذا الجهاز) ثم أعد المحاولة.', true);
+}
+function stopAllKeepMsg() { const t = $('#stageMsgText').textContent; stopAll(); stageMsg(t, true); }
+
+async function fillCameras() {
+  try {
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    const sel = $('#camSel'), cur = sel.value;
+    if (devs.length < 2) { sel.hidden = true; $('#camSelLbl').hidden = true; return; }
+    sel.innerHTML = devs.map((d, i) => `<option value="${d.deviceId}">${(d.label || 'كاميرا ' + (i + 1)).replace(/[<>&"]/g, '')}</option>`).join('');
+    if (cur && devs.some(d => d.deviceId === cur)) sel.value = cur;
+    else { const t = A.stream && A.stream.getVideoTracks()[0]; const id = t && t.getSettings().deviceId; if (id) sel.value = id; }
+    sel.hidden = false; $('#camSelLbl').hidden = false;
+  } catch (e) {}
+}
+
+async function openFile(file) {
+  if (!file) return;
+  stopAll(); initAudio();
+  vid.src = URL.createObjectURL(file); vid.muted = true; vid.loop = false;
+  try { await new Promise((res, rej) => { vid.onloadedmetadata = res; vid.onerror = () => rej(new Error('video')); }); }
+  catch (e) { stageMsg('تعذّر فتح هذا الفيديو. جرّب ملفًا بصيغة MP4 أو WebM.', true); return; }
+  A.source = 'file';
+  setCanvasSize(vid.videoWidth, vid.videoHeight);
+  S.mirror = false; $('#optMirror').checked = false;
+  try { await ensureModel(); } catch (e) { modelFailed(e); stopAllKeepMsg(); return; }
+  stageMsg('', false);
+  $('#transport').hidden = false;
+  $('#btnRec').disabled = false;
+  vid.playbackRate = +$('#tSpeed').value;
+  try { await vid.play(); } catch (e) {}
+  setHint('يجري تحليل الفيديو المسجَّل. استخدم شريط التحكم للإيقاف أو التبطيء.');
+  startLoop();
+}
+
+/* ================= حلقة المعالجة ================= */
+function startLoop() {
+  A.loopOn = true;
+  const step = (now, meta) => { if (!A.loopOn) return; try { processVideoFrame(meta); } catch (e) { console.error(e); } schedule(); };
+  const schedule = () => {
+    if (!A.loopOn) return;
+    if (vid.requestVideoFrameCallback) vid.requestVideoFrameCallback(step);
+    else requestAnimationFrame(() => { if (vid.currentTime !== A.lastVT || A.source === 'camera') { A.lastVT = vid.currentTime; step(0, null); } else schedule(); });
+  };
+  schedule();
+}
+function drawBase() {
+  const W = cv.width, H_ = cv.height;
+  if (S.display === 'skeleton') { ctx.fillStyle = '#0a1624'; ctx.fillRect(0, 0, W, H_); return; }
+  ctx.save(); if (S.mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
+  ctx.drawImage(vid, 0, 0, W, H_); ctx.restore();
+}
+function processVideoFrame(meta) {
+  if (vid.readyState < 2 || !A.lmk) return;
+  const W = cv.width, H_ = cv.height;
+  const t = A.source === 'file' ? ((meta && meta.mediaTime != null ? meta.mediaTime : vid.currentTime) * 1000) : performance.now();
+  if (A.lastT != null && t < A.lastT - 30) resetAnalysis();
+  A.lastT = t;
+  drawBase();
+  let raw = null;
+  try {
+    const ts = Math.max(A.lastTs + 1, performance.now()); A.lastTs = ts;
+    const r = A.lmk.detectForVideo(vid, ts);
+    if (r && r.landmarks && r.landmarks[0]) raw = r.landmarks[0];
+  } catch (e) { console.warn(e); }
+  ingest(raw, t, W, H_);
+}
+
+/* ================= الهندسة: زوايا وميزات ================= */
+const IDX = { right: { sh: 12, el: 14, wr: 16, hip: 24, kn: 26, an: 28 }, left: { sh: 11, el: 13, wr: 15, hip: 23, kn: 25, an: 27 } };
+const DEG = 180 / Math.PI;
+function ang(a, b, c) {
+  const v1x = a.x - b.x, v1y = a.y - b.y, v2x = c.x - b.x, v2y = c.y - b.y;
+  const d = Math.hypot(v1x, v1y) * Math.hypot(v2x, v2y);
+  if (d < 1e-6) return null;
+  return Math.acos(clamp((v1x * v2x + v1y * v2y) / d, -1, 1)) * DEG;
+}
+function smoothLm(raw, W, H_) {
+  const out = new Array(33), a = 0.55;
+  for (let i = 0; i < 33; i++) {
+    const p = raw[i];
+    if (!p) { out[i] = { x: 0, y: 0, v: 0 }; continue; }
+    const n = { x: p.x * W, y: p.y * H_, v: p.visibility != null ? p.visibility : 1 };
+    const o = A.sm && A.sm[i];
+    if (o && o.v > 0.3 && n.v > 0.3) { n.x = o.x + a * (n.x - o.x); n.y = o.y + a * (n.y - o.y); }
+    out[i] = n;
+  }
+  A.sm = out; return out;
+}
+const VIS = 0.4;
+const okp = (...p) => p.every(q => q && q.v >= VIS);
+function computeFeatures(lm, t) {
+  const sL = lm[11], sR = lm[12], hL = lm[23], hR = lm[24];
+  const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  const shMid = okp(sL, sR) ? mid(sL, sR) : okp(sL) ? sL : okp(sR) ? sR : null;
+  const hipMid = okp(hL, hR) ? mid(hL, hR) : okp(hL) ? hL : okp(hR) ? hR : null;
+  if (!shMid || !hipMid) return null;
+  const torso = Math.hypot(shMid.x - hipMid.x, shMid.y - hipMid.y);
+  if (torso < 20) return null;
+  const f = { t, torso, hx: hipMid.x, hy: hipMid.y };
+  f.leanSigned = Math.atan2(shMid.x - hipMid.x, hipMid.y - shMid.y) * DEG;
+  f.lean = Math.abs(f.leanSigned);
+  // الرجلان
+  const leg = (sh, hip, kn, an, s) => {
+    if (okp(hip, kn, an)) { f['knee' + s] = ang(hip, kn, an); f['th' + s] = Math.atan2(kn.x - hip.x, kn.y - hip.y) * DEG; }
+    if (okp(sh, hip, kn)) f['hipAng' + s] = ang(sh, hip, kn);
+    if (okp(an)) { f['a' + s + 'x'] = an.x; f['a' + s + 'y'] = an.y; }
+  };
+  const fd = [];
+  if (okp(lm[27], lm[31])) fd.push(lm[31].x - lm[27].x);
+  if (okp(lm[28], lm[32])) fd.push(lm[32].x - lm[28].x);
+  if (fd.length) f.footDir = mean(fd) / torso;
+  leg(sL, hL, lm[25], lm[27], 'L'); leg(sR, hR, lm[26], lm[28], 'R');
+  const ays = nn([f.aLy, f.aRy]); f.ankleY = ays.length ? mean(ays) : null;
+  // الذراعان
+  if (okp(sL, lm[13], lm[15])) { f.elbowL = ang(sL, lm[13], lm[15]); if (okp(hL)) f.shL = ang(hL, sL, lm[13]); }
+  if (okp(sR, lm[14], lm[16])) { f.elbowR = ang(sR, lm[14], lm[16]); if (okp(hR)) f.shR = ang(hR, sR, lm[14]); }
+  // اليد الرئيسية
+  const ix = IDX[S.hand], side = S.hand === 'right' ? 'R' : 'L';
+  const sh = lm[ix.sh], el = lm[ix.el], wr = lm[ix.wr], nose = lm[0];
+  f.knee = f['knee' + side] != null ? f['knee' + side] : (f.kneeL != null ? f.kneeL : f.kneeR);
+  if (okp(sh, el, wr)) {
+    f.elbow = f['elbow' + side]; f.shoulder = f['sh' + side] != null ? f['sh' + side] : null;
+    f.wx = wr.x; f.wy = wr.y;
+    f.wristUp = (sh.y - wr.y) / torso;
+    f.elbowOff = (el.x - sh.x) / torso;
+    f.armLean = Math.atan2(Math.abs(wr.x - sh.x), sh.y - wr.y) * DEG;
+    if (okp(nose)) f.wrHead = (nose.y - wr.y) / torso;
+  }
+  return f;
+}
+
+/* ================= سجل الإطارات ================= */
+const H = {
+  arr: [],
+  push(f) { this.arr.push(f); const cut = f.t - 8000; let i = 0; while (i < this.arr.length && this.arr[i].t < cut) i++; if (i) this.arr.splice(0, i); },
+  reset() { this.arr = []; }
+};
+const win = (a, b) => H.arr.filter(h => h.t >= a && h.t <= b);
+const nearest = t => { let b = null, d = 1e12; for (const h of H.arr) { const x = Math.abs(h.t - t); if (x < d) { d = x; b = h; } } return b; };
+const knees = (a, b) => win(a, b).flatMap(h => [h.kneeL, h.kneeR]);
+
+/* ================= كاشف 1: التصويب / الرمي ================= */
+function makeShotDet() {
+  const HI = 0.85, LOW = 0.45, REARM = 0.5, MIN_RISE = 0.5, TROUGH_WIN = 2600, CONFIRM_MS = 300, COOLDOWN = 900, ELBOW_MIN = 140;
+  let state = 'idle', peak = null, lastShot = -1e9, prevT = null;
+  function finalize() {
+    const pk = peak;
+    const near = win(pk.t - 300, pk.t + 100).filter(h => h.elbow != null);
+    const rel = near.reduce((m, h) => (!m || h.elbow > m.elbow) ? h : m, null);
+    if (!rel || rel.elbow < ELBOW_MIN) { state = 'idle'; peak = null; return null; }
+    const rt = rel.t;
+    const seg = win(pk.t - TROUGH_WIN, rt).filter(h => h.wristUp != null);
+    const tr = seg.reduce((m, h) => (!m || h.wristUp < m.wristUp) ? h : m, null);
+    const setF = seg.find(h => h.t >= tr.t && h.wrHead != null && h.wrHead >= 0 && h.elbow != null) || null;
+    const kseg = win(tr.t - 300, rt).map(h => h.knee);
+    const krel = win(rt - 100, rt + 100).map(h => h.knee);
+    let jump = null;
+    const base = nn(win(rt - 2500, rt - 400).map(h => h.ankleY));
+    const air = nn(win(rt - 250, rt + 350).map(h => h.ankleY));
+    const mt = median(seg.map(h => h.torso));
+    if (base.length >= 5 && air.length && mt) jump = Math.max(0, quant(base, 0.8) - Math.min(...air)) / mt;
+    // سرعة اليد (جذع/ث)
+    let handSpeed = null;
+    const ws = win(rt - 150, rt + 60).filter(h => h.wx != null);
+    for (let i = 1; i < ws.length; i++) {
+      const dt = (ws[i].t - ws[i - 1].t) / 1000; if (dt <= 0) continue;
+      const v = Math.hypot(ws[i].wx - ws[i - 1].wx, ws[i].wy - ws[i - 1].wy) / dt / ws[i].torso;
+      if (handSpeed == null || v > handSpeed) handSpeed = v;
+    }
+    const fields = {
+      kneeLoad: minOf(kseg), elbowSet: setF ? setF.elbow : null, elbowRelease: rel.elbow,
+      releaseHeight: rel.wrHead, kneeRelease: maxOf(krel), jump, duration: rt - tr.t, armLean: rel.armLean,
+      shoulderRelease: rel.shoulder, leanRelease: rel.lean, handSpeed,
+      elbowAlign: (S.view === 'front' && setF) ? Math.abs(setF.elbowOff) : null
+    };
+    state = 'cooldown'; lastShot = pk.t; peak = null;
+    return { fields, setT: setF ? setF.t : rt - 400, relT: rt };
+  }
+  return {
+    phase() { return state === 'rising' ? (ACT().ev + ' جارية…') : state === 'cooldown' ? ('تم تسجيل ال' + ACT().ev + ' ✓') : 'جاهز'; },
+    push(f) {
+      if (prevT != null && f.t - prevT > 1500) { peak = null; if (state === 'rising') state = 'idle'; }
+      prevT = f.t;
+      if (f.wristUp == null || f.elbow == null) return null;
+      if (state === 'cooldown') { if (f.wristUp < REARM && f.t - lastShot > COOLDOWN) state = 'idle'; return null; }
+      if (state === 'idle') {
+        if (f.wristUp > HI) {
+          const tr = minOf(win(f.t - TROUGH_WIN, f.t).map(h => h.wristUp));
+          if (tr != null && tr <= LOW && f.wristUp - tr >= MIN_RISE) { state = 'rising'; peak = { v: f.wristUp, t: f.t }; }
+        }
+        return null;
+      }
+      if (state === 'rising') {
+        if (f.wristUp > peak.v) peak = { v: f.wristUp, t: f.t };
+        if (f.t - peak.t >= CONFIRM_MS || f.wristUp < peak.v - 0.12) return finalize();
+        if (f.wristUp < LOW) { state = 'idle'; peak = null; }
+      }
+      return null;
+    }
+  };
+}
+
+/* ================= كاشف 2: الوثب (طويل / عمودي) ================= */
+function makeJumpDet(vertical) {
+  const AIR = 0.10, LAND = 0.05, MINF = vertical ? 220 : 260;
+  let state = 'ground', airSince = null, toT = null, coolUntil = 0;
+  function groundY(t) {
+    const ys = [];
+    for (const h of H.arr) { if (h.t < t - 5000) continue; if (h.aLy != null) ys.push(h.aLy); if (h.aRy != null) ys.push(h.aRy); }
+    return ys.length > 20 ? quant(ys, 0.9) : null;
+  }
+  function finalize(landT) {
+    const flight = landT - toT;
+    const a = nearest(toT), torso = a.torso;
+    const b = nearest(toT + 150);
+    let takeoffAngle = null;
+    if (b && b.t > a.t) {
+      const dt = (b.t - a.t) / 1000, vx = (b.hx - a.hx) / dt, vy = -(b.hy - a.hy) / dt;
+      if (!vertical && Math.abs(vx) > 0.5 * torso) takeoffAngle = Math.atan2(vy, Math.abs(vx)) * DEG;
+    }
+    const p1 = nearest(toT - 450), p2 = nearest(toT - 50);
+    const approach = (p1 && p2 && p2.t > p1.t) ? Math.abs(p2.hx - p1.hx) / ((p2.t - p1.t) / 1000) / torso : null;
+    const l = nearest(landT);
+    const flightFrames = win(toT, landT);
+    const fields = {
+      flight, jumpH: 9.81 * (flight / 1000) ** 2 / 8 * 100,
+      hipRise: flightFrames.length ? (a.hy - Math.min(...flightFrames.map(h => h.hy))) / torso : null,
+      takeoffKnee: maxOf(knees(toT - 100, toT + 50)),
+      driveKnee: vertical ? null : minOf(knees(toT - 150, toT + 100)),
+      leanTakeoff: mean(nn(win(toT - 60, toT + 60).map(h => h.lean))),
+      takeoffAngle,
+      approach: vertical ? null : approach,
+      dist: (!vertical && l) ? Math.abs(l.hx - a.hx) / torso : null,
+      kneeLanding: minOf(knees(landT - 80, landT + 400)),
+      kneeLoad: vertical ? minOf(knees(toT - 1300, toT)) : null
+    };
+    return { fields, setT: toT, relT: landT + 120 };
+  }
+  let pending = null;
+  return {
+    phase() { return state === 'air' ? 'في الهواء ✈' : 'جاهز للوثب'; },
+    push(f) {
+      if (pending && f.t >= pending.at) { const r = finalize(pending.landT); pending = null; return r; }
+      if (f.aLy == null || f.aRy == null) return null;
+      const g = groundY(f.t); if (g == null) return null;
+      f.gmin = Math.min(g - f.aLy, g - f.aRy) / f.torso;
+      if (state === 'ground') {
+        if (f.t < coolUntil) return null;
+        if (f.gmin > AIR) {
+          if (airSince == null) airSince = f.t;
+          if (f.t - airSince >= 60) {
+            let to = airSince;
+            for (let i = H.arr.length - 1; i >= 0; i--) { const h = H.arr[i]; if (h.t > airSince) continue; if (h.gmin == null || h.gmin <= 0.03) break; to = h.t; }
+            toT = to; state = 'air';
+          }
+        } else airSince = null;
+      } else {
+        if (f.gmin < LAND) {
+          const flight = f.t - toT; state = 'ground'; airSince = null; coolUntil = f.t + 700;
+          if (flight >= MINF && flight < 2500) pending = { landT: f.t, at: f.t + 420 }; // ننتظر قليلًا لقياس الهبوط
+        } else if (f.t - toT > 2500) { state = 'ground'; airSince = null; }
+      }
+      return null;
+    }
+  };
+}
+
+/* ================= كاشف 3: الجري ================= */
+function makeRunDet() {
+  const NEED = 9; let lastSide = 0, steps = [];
+  function finalize(ts) {
+    const t0 = ts[0], t1 = ts[ts.length - 1], fr = win(t0, t1);
+    const iv = []; for (let i = 1; i < ts.length; i++) { const d = ts[i] - ts[i - 1]; if (d >= 150 && d <= 900) iv.push(d); }
+    if (iv.length < 6 || fr.length < 6) return null;
+    const torso = median(fr.map(h => h.torso));
+    // اتجاه الجري من اتجاه القدمين (مقدمة القدم أمام الكاحل)، وإلا من حركة الورك
+    const fdm = median(nn(fr.map(h => h.footDir)));
+    let dir;
+    if (fdm != null && Math.abs(fdm) > 0.08) dir = Math.sign(fdm);
+    else { const n3 = Math.max(1, Math.floor(fr.length / 3)); const dx = mean(fr.slice(-n3).map(h => h.hx)) - mean(fr.slice(0, n3).map(h => h.hx)); dir = Math.abs(dx) > 0.3 * torso ? Math.sign(dx) : 1; }
+    const vs = []; for (let i = 1; i < fr.length; i++) { const dt = (fr[i].t - fr[i - 1].t) / 1000, dxx = Math.abs(fr[i].hx - fr[i - 1].hx) / fr[i].torso; if (dt > 0 && dxx < 0.6) vs.push(dxx / dt); }
+    const lifts = [];
+    for (let i = 1; i < ts.length; i++) { const w = win(ts[i - 1], ts[i]); const m = maxOf(w.flatMap(h => [h.thL != null ? dir * h.thL : null, h.thR != null ? dir * h.thR : null])); if (m != null) lifts.push(m); }
+    const pL = quant(nn(fr.map(h => h.thL != null ? dir * h.thL : null)), 0.95), pR = quant(nn(fr.map(h => h.thR != null ? dir * h.thR : null)), 0.95);
+    const elb = nn(fr.map(h => { const e = nn([h.elbowL, h.elbowR]); return e.length ? mean(e) : null; }));
+    const rngOf = k => { const v = nn(fr.map(h => h[k])); return v.length > 4 ? quant(v, 0.95) - quant(v, 0.05) : null; };
+    const sw = nn([rngOf('shL'), rngOf('shR')]);
+    const mi = mean(iv);
+    return {
+      fields: {
+        cadence: 60000 / mi, regularity: sdev(iv) / mi * 100,
+        kneeLift: lifts.length ? mean(lifts) : null,
+        asym: (pL != null && pR != null && Math.max(pL, pR) > 5) ? Math.abs(pL - pR) / Math.max(pL, pR) * 100 : null,
+        lean: mean(fr.map(h => dir * h.leanSigned)),
+        elbowMean: elb.length ? mean(elb) : null,
+        armSwing: sw.length ? mean(sw) : null,
+        speed: vs.length ? median(vs) : null,
+        steps: ts.length - 1
+      }, setT: t0, relT: t1
+    };
+  }
+  return {
+    phase() { return steps.length > 1 ? `عدّ الخطوات ${steps.length - 1}/${NEED - 1}` : 'ابدأ الجري'; },
+    push(f) {
+      if (f.aLx == null || f.aRx == null) return null;
+      if (steps.length && f.t - steps[steps.length - 1] > 1200) { steps = []; lastSide = 0; }
+      const d = (f.aLx - f.aRx) / f.torso, side = Math.abs(d) > 0.12 ? Math.sign(d) : 0;
+      if (side !== 0 && side !== lastSide) { if (lastSide !== 0 || !steps.length) steps.push(f.t); lastSide = side; }
+      if (steps.length >= NEED) { const r = finalize(steps.slice(-NEED)); steps = [steps[steps.length - 1]]; return r; }
+      return null;
+    }
+  };
+}
+
+/* ================= كاشف 4: المحاورة ================= */
+function makeDribbleDet() {
+  const SW = 0.15, NEED = 9; let mode = 'max', ext = null, maxs = [], mins = [];
+  function finalize() {
+    const t0 = maxs[0].t, t1 = maxs[maxs.length - 1].t, fr = win(t0, t1);
+    const iv = []; for (let i = 1; i < maxs.length; i++) iv.push(maxs[i].t - maxs[i - 1].t);
+    const mi = mean(iv);
+    const tops = mins.filter(m => m.t >= t0 && m.t <= t1);
+    return {
+      fields: {
+        rate: 1000 / mi, regularity: sdev(iv) / mi * 100,
+        handTop: tops.length ? -mean(tops.map(m => m.v)) : null,
+        kneeMean: mean(nn(fr.map(h => h.knee))), leanMean: mean(nn(fr.map(h => h.lean))), count: maxs.length - 1
+      }, setT: t0, relT: t1
+    };
+  }
+  return {
+    phase() { return maxs.length ? `محاورة ${Math.max(0, maxs.length - 1)}/${NEED - 1}` : 'ابدأ المحاورة'; },
+    push(f) {
+      if (f.wy == null) return null;
+      const v = (f.wy - f.hy) / f.torso;
+      if (maxs.length && f.t - maxs[maxs.length - 1].t > 1500) { maxs = []; mins = []; }
+      if (!ext) { ext = { v, t: f.t }; return null; }
+      if (mode === 'max') { if (v > ext.v) ext = { v, t: f.t }; else if (ext.v - v > SW) { maxs.push(ext); mode = 'min'; ext = { v, t: f.t }; } }
+      else { if (v < ext.v) ext = { v, t: f.t }; else if (v - ext.v > SW) { mins.push(ext); mode = 'max'; ext = { v, t: f.t }; } }
+      if (maxs.length >= NEED) { const r = finalize(); maxs = [maxs[maxs.length - 1]]; mins = []; return r; }
+      return null;
+    }
+  };
+}
+
+/* ================= كاشف 5: الوضعية الثابتة ================= */
+function makePoseDet() {
+  let armed = true, cap = null;
+  function capture(t) {
+    const fr = win(t - 700, t).filter(h => h.kneeL != null && h.kneeR != null);
+    if (fr.length < 3) return null;
+    const kL = mean(fr.map(h => h.kneeL)), kR = mean(fr.map(h => h.kneeR));
+    const hips = nn(fr.flatMap(h => [h.hipAngL, h.hipAngR]));
+    const sp = nn(fr.map(h => (h.aLx != null && h.aRx != null) ? Math.abs(h.aLx - h.aRx) / h.torso : null));
+    cap = { kL, kR };
+    return { fields: { kneeMin: Math.min(kL, kR), kneeMax: Math.max(kL, kR), hip: hips.length ? mean(hips) : null, lean: mean(fr.map(h => h.lean)), spread: S.view === 'front' && sp.length ? mean(sp) : null }, setT: t, relT: t };
+  }
+  function stable(f) {
+    const fr = win(f.t - 1000, f.t);
+    if (fr.length < 8 || f.t - fr[0].t < 900) return false;
+    const rng = k => { const v = nn(fr.map(h => h[k])); return v.length ? Math.max(...v) - Math.min(...v) : 999; };
+    return rng('kneeL') < 7 && rng('kneeR') < 7 && rng('lean') < 5 && Math.max(rng('hx'), rng('hy')) / f.torso < 0.08;
+  }
+  return {
+    phase() { return armed ? 'اثبت في الوضعية ثانية واحدة' : 'تم الالتقاط ✓ — تحرّك ثم عُد للوضعية'; },
+    capture(t) { const r = capture(t); if (r) armed = false; return r; },
+    push(f) {
+      if (f.kneeL == null || f.kneeR == null) return null;
+      if (!armed) { if (cap && (Math.abs(f.kneeL - cap.kL) > 20 || Math.abs(f.kneeR - cap.kR) > 20)) armed = true; return null; }
+      if (Math.min(f.kneeL, f.kneeR) < 155 && stable(f)) { const r = capture(f.t); if (r) armed = false; return r; }
+      return null;
+    }
+  };
+}
+
+function makeDet() {
+  const a = ACT();
+  switch (a.kind) {
+    case 'shot': return makeShotDet();
+    case 'jump': return makeJumpDet(!!a.vertical);
+    case 'run': return makeRunDet();
+    case 'dribble': return makeDribbleDet();
+    default: return makePoseDet();
+  }
+}
+let D = null;
+
+/* ================= لقطات (ذاكرة مؤقتة دائرية) ================= */
+const RING = 72; const ring = []; let ringI = 0;
+function ringPush(t) {
+  const w = 320, h = Math.max(1, Math.round(320 * cv.height / cv.width));
+  let s = ring[ringI]; if (!s) { s = { c: document.createElement('canvas'), t: 0 }; ring[ringI] = s; }
+  if (s.c.width !== w || s.c.height !== h) { s.c.width = w; s.c.height = h; }
+  s.c.getContext('2d').drawImage(cv, 0, 0, w, h); s.t = t; ringI = (ringI + 1) % RING;
+}
+function ringAt(t) {
+  let best = null, b = 1e12;
+  for (const s of ring) { if (!s) continue; const d = Math.abs(s.t - t); if (d < b) { b = d; best = s; } }
+  return best ? best.c.toDataURL('image/jpeg', 0.72) : null;
+}
+
+/* ================= الرسم فوق الفيديو ================= */
+const CONN = [[11, 12], [11, 23], [12, 24], [23, 24], [11, 13], [13, 15], [12, 14], [14, 16], [23, 25], [25, 27], [24, 26], [26, 28], [27, 31], [28, 32]];
+function tag(text, x, y, W) {
+  const fs = Math.round(W / 46);
+  ctx.font = `700 ${fs}px Cairo,Tajawal,Tahoma,sans-serif`;
+  const w = ctx.measureText(text).width + 14, h = fs + 10;
+  ctx.fillStyle = 'rgba(8,18,30,.82)';
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y - h, w, h, 8) : ctx.rect(x, y - h, w, h); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  ctx.fillText(text, x + 7, y - h / 2 + 1);
+}
+function drawOverlay(lm, f, W) {
+  const mx = x => S.mirror ? W - x : x, lw = Math.max(3, W / 300), ix = IDX[S.hand], kind = ACT().kind;
+  const armFocus = kind === 'shot' || kind === 'dribble';
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (armFocus && A.trail.length > 1) {
+    for (let i = 1; i < A.trail.length; i++) {
+      ctx.strokeStyle = `rgba(255,162,58,${i / A.trail.length * 0.8})`; ctx.lineWidth = lw * (0.6 + i / A.trail.length);
+      ctx.beginPath(); ctx.moveTo(mx(A.trail[i - 1].x), A.trail[i - 1].y); ctx.lineTo(mx(A.trail[i].x), A.trail[i].y); ctx.stroke();
+    }
+  }
+  for (const [a, b] of CONN) {
+    const p = lm[a], q = lm[b]; if (!okp(p, q)) continue;
+    const hi = armFocus ? ((a === ix.sh && b === ix.el) || (a === ix.el && b === ix.wr)) : (kind !== 'pose' && [25, 26, 27, 28].includes(b) && a !== 27 && a !== 28);
+    ctx.beginPath(); ctx.moveTo(mx(p.x), p.y); ctx.lineTo(mx(q.x), q.y);
+    ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = lw + 3; ctx.stroke();
+    ctx.strokeStyle = hi ? '#ffa23a' : '#5ee1ff'; ctx.lineWidth = lw; ctx.stroke();
+  }
+  for (const i of [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28]) {
+    const p = lm[i]; if (!okp(p)) continue;
+    ctx.beginPath(); ctx.arc(mx(p.x), p.y, lw * 1.35, 0, 6.2832);
+    ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.lineWidth = 2; ctx.stroke();
+  }
+  const n = lm[0];
+  if (okp(n)) { ctx.beginPath(); ctx.arc(mx(n.x), n.y, f ? f.torso * 0.28 : W / 30, 0, 6.2832); ctx.strokeStyle = '#5ee1ff'; ctx.lineWidth = lw; ctx.stroke(); }
+  if (!f) return;
+  if (armFocus) {
+    const el = lm[ix.el], kn = lm[ix.kn], sh = lm[ix.sh];
+    if (f.elbow != null) tag(rnd(f.elbow) + '°', mx(el.x) + 12, el.y - 6, W);
+    if (f.knee != null && okp(kn)) tag(rnd(f.knee) + '°', mx(kn.x) + 12, kn.y + 8, W);
+    if (f.shoulder != null && kind === 'shot') tag(rnd(f.shoulder) + '°', mx(sh.x) + 12, sh.y - 14, W);
+  } else {
+    if (f.kneeL != null) tag(rnd(f.kneeL) + '°', mx(lm[25].x) + 12, lm[25].y + 8, W);
+    if (f.kneeR != null) tag(rnd(f.kneeR) + '°', mx(lm[26].x) + 12, lm[26].y - 18, W);
+    const hp = okp(lm[24]) ? lm[24] : lm[23];
+    if (okp(hp) && (f.hipAngR != null || f.hipAngL != null)) tag(rnd(f.hipAngR != null ? f.hipAngR : f.hipAngL) + '°', mx(hp.x) + 12, hp.y - 6, W);
+  }
+}
+
+/* ================= مسار الإطار الواحد ================= */
+function ingest(raw, t, W, H_) {
+  let lm = null, f = null;
+  if (raw) { lm = smoothLm(raw, W, H_); A.miss = 0; } else { A.miss++; if (A.miss > 8) { A.sm = null; A.trail = []; } }
+  if (lm) f = computeFeatures(lm, t);
+  if (lm) {
+    if (f && f.wx != null) { A.trail.push({ x: f.wx, y: f.wy }); if (A.trail.length > 16) A.trail.shift(); }
+    drawOverlay(lm, f, W);
+  }
+  ringPush(t);
+  let res = null;
+  if (f) { A.lastFeat = f; H.push(f); res = D.push(f); }
+  if (res) onEvent(res);
+  const kind = ACT().kind;
+  const lowerOk = f && f.kneeL != null && f.kneeR != null && f.aLy != null && f.aRy != null;
+  const armOk = f && f.wristUp != null;
+  if (!lm) setPhase('لا يوجد لاعب في الإطار');
+  else if (!f) setPhase('ظهّر الجسم كاملًا');
+  else setPhase(D.phase());
+  const nowMs = performance.now();
+  if (nowMs - A.lastUi > 100) {
+    A.lastUi = nowMs;
+    updateLive(f, t);
+    if (A.source !== 'file') {
+      if (!lm) setHint('لا يظهر لاعب في الإطار. ابتعد قليلًا وتأكد من الإضاءة وأن الجسم كاملًا داخل الصورة.', true);
+      else if (!f) setHint('يلزم ظهور الكتفين والوركين بوضوح. جرّب تغيير الزاوية أو الابتعاد.', true);
+      else if ((kind === 'shot' || kind === 'dribble') && !armOk) setHint('ذراع اليد الرئيسية غير ظاهرة بوضوح؛ صوّر من جهة هذه الذراع أو غيّر «اليد الرئيسية» من الإعدادات.', true);
+      else if ((kind === 'run' || kind === 'jump' || kind === 'pose') && !lowerOk) setHint('الرجلان أو القدمان غير ظاهرتين بالكامل؛ ظهّر الجسم حتى القدمين.', true);
+      else setHint(kind === 'pose' ? 'الوضع ممتاز. اتخذ الوضعية واثبت ثانية واحدة.' : 'الوضع ممتاز. ابدأ الأداء؛ كل محاولة تُسجَّل وتُحلَّل تلقائيًا.');
+    }
+  }
+}
+
+function onEvent(res) {
+  const evs = curEvents();
+  const ev = Object.assign({}, res.fields, { ak: S.act, id: evs.length + 1, view: S.view, hand: S.hand, at: Date.now() });
+  const th = ACT().thumbs;
+  ev.imgSet = ringAt(res.setT); ev.imgRel = th.length > 1 ? ringAt(res.relT) : null;
+  A.events.push(ev); A.marks.push(res.relT); A.sel = ev;
+  const e = evalEvent(ev);
+  beep(e.score >= 75);
+  toast(`${ACT().ev} رقم ${ev.id} — الدرجة <span style="color:${e.score >= 75 ? '#0a7d4f' : '#b45309'}">${e.score}</span>`);
+  renderAll();
+}
+
+/* ================= التقييم ================= */
+function evalEvent(ev) {
+  const items = [];
+  for (const m of ACTS[ev.ak].metrics) {
+    if (m.frontOnly && ev.view !== 'front') continue;
+    const v = ev[m.k]; if (v == null || isNaN(v)) continue;
+    const t = tgtOf(ev.ak, m), dv = v * m.scale;
+    items.push({ m, v, dv, t, status: dv < t.min ? 'low' : dv > t.max ? 'high' : 'ok' });
+  }
+  const okN = items.filter(i => i.status === 'ok').length;
+  return { items, score: items.length ? rnd(100 * okN / items.length) : 0, okN };
+}
+const fmtV = (m, dv) => bd(rnd(dv) + m.unit);
+const badgeCls = s => s >= 75 ? 'hi' : s >= 50 ? 'md' : 'lo';
+
+/* ================= العرض ================= */
+function renderAll() { renderDetail(); renderTable(); renderSummary(); }
+
+function renderDetail() {
+  const a = ACT(), box = $('#detail');
+  $('#hDetail').textContent = 'تحليل ' + (a.evT || ('ال' + a.ev));
+  const ev = A.sel && A.sel.ak === S.act ? A.sel : null;
+  if (!ev) { box.innerHTML = `<p class="empty">لم تُسجَّل ${a.evs} بعد. ابدأ الأداء وستظهر النتيجة هنا تلقائيًا.</p>`; return; }
+  const e = evalEvent(ev);
+  const good = e.items.filter(i => i.status === 'ok'), bad = e.items.filter(i => i.status !== 'ok');
+  const prev = curEvents().filter(s => s.id < ev.id).map(s => evalEvent(s).score);
+  let cmp = '';
+  if (prev.length) {
+    const d = e.score - rnd(mean(prev));
+    cmp = d > 3 ? `أعلى من متوسط محاولاتك السابقة بـ ${d} نقطة 👏` : d < -3 ? `أقل بـ ${-d} نقطة من متوسطك السابق، وهذا طبيعي؛ كرّر وركّز على نقطة واحدة.` : 'قريبة من متوسط محاولاتك السابقة — ثبات جيد.';
+  }
+  const lead = e.score >= 80 ? 'أداء ممتاز' : e.score >= 50 ? 'أداء جيد — بقي القليل' : 'بداية جيدة — ركّز على نقطة واحدة';
+  let html = `<div class="score-row"><div class="ring ${e.score >= 75 ? '' : 'mid'}" style="--p:${e.score}"><span>${e.score}</span></div>
+    <div><strong>${a.ev} رقم ${ev.id}</strong><br>${lead}<br><span class="small muted">${e.okN} من ${e.items.length} قياسات ضمن النطاق المرجعي</span>${cmp ? `<br><span class="small">${cmp}</span>` : ''}</div></div>`;
+  if (ev.imgSet || ev.imgRel) {
+    html += '<div class="thumbs">' + (ev.imgSet ? `<figure><img src="${ev.imgSet}" alt="${a.thumbs[0]}"><figcaption>${a.thumbs[0]}</figcaption></figure>` : '') +
+      (ev.imgRel ? `<figure><img src="${ev.imgRel}" alt="${a.thumbs[1]}"><figcaption>${a.thumbs[1]}</figcaption></figure>` : '') + '</div>';
+  }
+  html += '<ul class="metric-list">' + e.items.map(i => `<li class="${i.status === 'ok' ? 'ok' : 'no'}"><span class="ic" aria-hidden="true">${i.status === 'ok' ? '✓' : '⚠'}</span><span>${i.m.label}<br><span class="small muted">المرجع: من ${bd(i.t.min + i.m.unit)} إلى ${bd(i.t.max + i.m.unit)}</span></span><span class="val">${fmtV(i.m, i.dv)}</span></li>`).join('') + '</ul>';
+  const tips = bad.map(i => i.status === 'low' ? i.m.low : i.m.high).filter(Boolean).slice(0, 3);
+  if (good.length && bad.length) html += `<div class="tips good"><h3>نقاط القوة</h3><ul>${good.slice(0, 3).map(i => `<li>${i.m.label}</li>`).join('')}</ul></div>`;
+  html += tips.length ? `<div class="tips"><h3>فرصة للتحسين</h3><ul>${tips.map(t => `<li>${t}</li>`).join('')}</ul></div>`
+    : (e.items.length ? '<div class="tips good"><h3>رائع!</h3><p style="margin:0">جميع القياسات ضمن النطاق المرجعي. حافظ على نفس الأداء.</p></div>' : '');
+  html += '<dl class="kv">' + a.extras.map(x => `<dt>${x.label}</dt><dd>${x.fmt(ev[x.k])}</dd>`).join('') + '</dl>';
+  box.innerHTML = html;
+}
+
+function renderTable() {
+  const a = ACT(), mets = visMetrics(), evs = curEvents();
+  $('#hShots').textContent = 'سجل ' + a.evs;
+  $('#shotsHead').innerHTML = '<tr><th>#</th><th>الدرجة</th>' + mets.map(m => `<th>${m.short}</th>`).join('') + a.extras.map(x => `<th>${x.short}</th>`).join('') + '<th>لقطات</th></tr>';
+  const cols = 3 + mets.length + a.extras.length;
+  if (!evs.length) { $('#shotsBody').innerHTML = `<tr><td colspan="${cols}" class="muted">لا توجد ${a.evs} بعد.</td></tr>`; return; }
+  $('#shotsBody').innerHTML = evs.map(ev => {
+    const e = evalEvent(ev);
+    const cell = m => { const it = e.items.find(i => i.m.k === m.k); return it ? `<td data-label="${m.short}" class="${it.status === 'ok' ? 'cell-ok' : 'cell-no'}">${fmtV(m, it.dv)}</td>` : `<td data-label="${m.short}">—</td>`; };
+    return `<tr data-id="${ev.id}" class="${ev === A.sel ? 'sel' : ''}" tabindex="0" aria-label="${a.ev} ${ev.id}">
+      <td data-label="رقم المحاولة">${ev.id}</td>
+      <td data-label="الدرجة"><span class="badge ${badgeCls(e.score)}">${e.score}</span></td>
+      ${mets.map(cell).join('')}${a.extras.map(x => `<td data-label="${x.short}">${x.fmt(ev[x.k])}</td>`).join('')}
+      <td class="imgs" data-label="لقطات">${ev.imgSet ? `<img src="${ev.imgSet}" alt="${a.thumbs[0]}">` : ''}${ev.imgRel ? `<img src="${ev.imgRel}" alt="${a.thumbs[1]}">` : ''}</td></tr>`;
+  }).join('');
+}
+
+function renderSummary() {
+  const box = $('#summary'), evs = curEvents(), n = evs.length, a = ACT();
+  if (!n) { box.innerHTML = `<p class="empty">يظهر الملخص بعد أول ${a.ev}.</p>`; return; }
+  const es = evs.map(evalEvent), scores = es.map(e => e.score);
+  const best = evs[scores.indexOf(Math.max(...scores))];
+  const rates = a.metrics.map(m => {
+    const vals = es.map(e => e.items.find(i => i.m.k === m.k)).filter(Boolean);
+    return vals.length ? { m, rate: vals.filter(v => v.status === 'ok').length / vals.length, avg: mean(vals.map(v => v.dv)), sd: sdev(vals.map(v => v.dv)) } : null;
+  }).filter(Boolean);
+  const strong = rates.slice().sort((x, y) => y.rate - x.rate)[0];
+  const focus = rates.slice().sort((x, y) => x.rate - y.rate)[0];
+  let cons = '—';
+  if (n >= 3) { const sds = nn(rates.filter(r => r.m.unit === '°').map(r => r.sd)); if (sds.length) { const m = mean(sds); cons = m < 6 ? 'عالٍ' : m < 12 ? 'متوسط' : 'يحتاج إلى مزيد من التكرار'; } }
+  let trend = '—';
+  if (n >= 6) { const h = n >> 1, d = mean(scores.slice(h)) - mean(scores.slice(0, h)); trend = d >= 5 ? 'تحسّن واضح 👏' : d <= -5 ? 'تراجع بسيط (طبيعي مع التعب)' : 'ثابت'; }
+  box.innerHTML = `<dl class="kv" style="margin-top:0"><dt>عدد ${a.evs}</dt><dd>${n}</dd><dt>متوسط الدرجة</dt><dd>${rnd(mean(scores))}</dd><dt>أفضل محاولة</dt><dd>رقم ${best.id} (${Math.max(...scores)})</dd>
+    <dt>أقوى نقطة</dt><dd>${strong ? strong.m.label : '—'}</dd><dt>أولوية التحسين</dt><dd>${focus && focus.rate < 1 ? focus.m.label : 'لا يوجد — أداء متوازن'}</dd>
+    <dt>ثبات الأداء</dt><dd>${cons}</dd><dt>الاتجاه خلال الجلسة</dt><dd>${trend}</dd></dl>
+    <table class="targets" style="margin-top:12px"><thead><tr><th>القياس</th><th>المتوسط</th><th>ضمن النطاق</th></tr></thead><tbody>${rates.map(r => `<tr><td>${r.m.label}</td><td>${fmtV(r.m, r.avg)}</td><td>${bd(rnd(r.rate * 100) + '%')}</td></tr>`).join('')}</tbody></table>`;
+}
+
+/* ================= القياسات اللحظية والرسم البياني ================= */
+const SERIES_STYLE = [['#0b5cab', []], ['#0a7d4f', [7, 5]]];
+function renderLegend() {
+  $('#legend').innerHTML = ACT().chart.map((c, i) => `<span class="${i ? 'k' : ''}">${c[1]}</span>`).join('') + `<span class="mk">الخطوط المنقّطة البرتقالية = لحظة تسجيل محاولة</span>`;
+}
+function resetLive() { ['Elbow', 'Knee', 'Shoulder', 'Lean'].forEach(k => { $('#v' + k).textContent = '–'; $('#b' + k).style.width = '0'; }); drawChart(0); }
+function updateLive(f, t) {
+  const set = (k, v, max) => { $('#v' + k).textContent = v == null ? '–' : rnd(v); $('#b' + k).style.width = v == null ? '0' : clamp(v / max * 100, 0, 100) + '%'; };
+  const elbow = f ? (f.elbow != null ? f.elbow : (nn([f.elbowL, f.elbowR])[0])) : null;
+  const shoulder = f ? (f.shoulder != null ? f.shoulder : (nn([f.shL, f.shR])[0])) : null;
+  set('Elbow', elbow, 180); set('Knee', f && f.knee, 180); set('Shoulder', shoulder, 180); set('Lean', f && f.lean, 45);
+  drawChart(t);
+}
+function drawChart(tNow) {
+  const c = chartCv, dpr = window.devicePixelRatio || 1;
+  const w = c.clientWidth, h = c.clientHeight; if (!w) return;
+  if (c.width !== w * dpr || c.height !== h * dpr) { c.width = w * dpr; c.height = h * dpr; }
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const L = 34, R = 6, T = 8, B = 18, pw = w - L - R, ph = h - T - B;
+  g.font = '12px Cairo,Tahoma,sans-serif'; g.fillStyle = '#4a5d73'; g.strokeStyle = '#e1e8f1'; g.lineWidth = 1; g.textAlign = 'right'; g.textBaseline = 'middle';
+  for (const a of [60, 90, 120, 150, 180]) { const y = T + ph * (1 - a / 180); g.beginPath(); g.moveTo(L, y); g.lineTo(w - R, y); g.stroke(); g.fillText(a + '°', L - 4, y); }
+  if (!H.arr.length || !tNow) return;
+  const t0 = tNow - 6000, X = t => L + pw * ((t - t0) / 6000), Y = a => T + ph * (1 - clamp(a, 0, 180) / 180);
+  g.strokeStyle = '#b45309'; g.lineWidth = 1.5; g.setLineDash([2, 3]);
+  for (const m of A.marks) { if (m < t0) continue; const x = X(m); g.beginPath(); g.moveTo(x, T); g.lineTo(x, T + ph); g.stroke(); }
+  g.setLineDash([]);
+  ACT().chart.forEach(([k], i) => {
+    const [color, dash] = SERIES_STYLE[i] || SERIES_STYLE[0];
+    g.beginPath(); g.setLineDash(dash); g.strokeStyle = color; g.lineWidth = 2.5; let on = false;
+    for (const p of H.arr) { if (p[k] == null || p.t < t0) { on = false; continue; } const x = X(p.t), y = Y(p[k]); if (!on) { g.moveTo(x, y); on = true; } else g.lineTo(x, y); }
+    g.stroke(); g.setLineDash([]);
+  });
+}
+
+/* ================= الصوت ================= */
+let actx = null;
+function initAudio() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) {} }
+function beep(good) {
+  if (!S.sound || !actx) return;
+  try {
+    const t0 = actx.currentTime;
+    (good ? [660, 880] : [330]).forEach((fr, i) => {
+      const o = actx.createOscillator(), g = actx.createGain(); o.type = 'sine'; o.frequency.value = fr;
+      g.gain.setValueAtTime(0.0001, t0 + i * 0.14); g.gain.exponentialRampToValueAtTime(0.25, t0 + i * 0.14 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.14 + 0.18);
+      o.connect(g).connect(actx.destination); o.start(t0 + i * 0.14); o.stop(t0 + i * 0.14 + 0.2);
+    });
+  } catch (e) {}
+}
+
+/* ================= المحاكاة (لاعب افتراضي لكل مهارة) ================= */
+const SIM_SPEED = Math.max(0.25, Math.min(6, +(new URLSearchParams(location.search).get('sim') || 1)));
+const sstep = x => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+const lerpKF = (KF, u) => { let i = 0; while (i < KF.length - 2 && u > KF[i + 1][0]) i++; const a = KF[i], b = KF[i + 1], k = sstep((u - a[0]) / (b[0] - a[0] || 1)); return a.slice(1).map((v, j) => v + (b[j + 1] - v) * k); };
+
+// محاكاة التصويب (المُختبرة سابقًا)
+function simShotParams(cyc, u) {
+  const dip = 108 + 14 * Math.sin(cyc * 1.7), rel = (cyc % 3 === 2) ? 148 : 175;
+  return lerpKF([[0, 172, 3, 5, 40, 85, 0], [0.22, 172, 3, 5, 40, 85, 0], [0.42, dip, 26, 22, 35, 72, 0], [0.56, 150, 12, 12, 95, 90, 0],
+    [0.68, 176, 0, 3, 158, rel, 0.2], [0.80, 176, 0, 3, 160, rel - 4, 0], [0.90, 175, 2, 4, 150, 168, 0], [1, 172, 3, 5, 40, 85, 0]], u);
+}
+function synthShot(simT, W, H_) {
+  const T = 3.2, cyc = Math.floor(simT / T), u = (simT % T) / T;
+  const [knee, shank, lean, sig, elb, jump] = simShotParams(cyc, u);
+  const d = Math.PI / 180, L = H_ * 0.2, cx = W * 0.4, gy = H_ * 0.9;
+  const P = (x, y) => ({ x: (cx + x * L) / W, y: (gy - y * L) / H_, visibility: 1 });
+  const ank = [0, jump], kn = [0.95 * Math.sin(shank * d), jump + 0.95 * Math.cos(shank * d)];
+  const th = (shank - (180 - knee)) * d, hip = [kn[0] + 0.95 * Math.sin(th), kn[1] + 0.95 * Math.cos(th)];
+  const sh = [hip[0] + Math.sin(lean * d), hip[1] + Math.cos(lean * d)];
+  const u0 = [Math.sin(sig * d), -Math.cos(sig * d)], el = [sh[0] + 0.6 * u0[0], sh[1] + 0.6 * u0[1]];
+  const a2 = (180 - elb) * d, fd = [u0[0] * Math.cos(a2) - u0[1] * Math.sin(a2), u0[0] * Math.sin(a2) + u0[1] * Math.cos(a2)];
+  const wr = [el[0] + 0.55 * fd[0], el[1] + 0.55 * fd[1]];
+  const nose = [sh[0] + 0.55 * Math.sin(lean * d) + 0.1, sh[1] + 0.55 * Math.cos(lean * d)];
+  const lm = new Array(33).fill(null).map(() => ({ x: 0, y: 0, visibility: 0 }));
+  const nz = i => 0.002 * Math.sin(simT * 37 + i * 5.1);
+  const put = (i, p, dx = 0) => { const q = P(p[0] + dx, p[1]); q.x += nz(i); q.y += nz(i + 40); lm[i] = q; };
+  put(0, nose);
+  [[11, 12], [13, 14], [15, 16]].forEach(([l, r], j) => { const p = [sh, el, wr][j]; put(l, p, -0.06); put(r, p); });
+  [[23, 24], [25, 26], [27, 28]].forEach(([l, r], j) => { const p = [hip, kn, ank][j]; put(l, p, -0.04); put(r, p); });
+  put(31, [ank[0] + 0.35, ank[1] - 0.05], -0.04); put(32, [ank[0] + 0.35, ank[1] - 0.05]);
+  return lm;
+}
+
+// هيكل عام بزوايا: th = زاوية الفخذ للأمام عن العمودي، k = انثناء الركبة، s = زاوية الكتف، e = زاوية المرفق
+function fkLm(p, hxU, L, W, H_, simT) {
+  const d = Math.PI / 180, gy = H_ * 0.9;
+  const leg = (th, k) => { const kn = [0.95 * Math.sin(th * d), -0.95 * Math.cos(th * d)]; const a = (th - k) * d; return { kn, an: [kn[0] + 0.95 * Math.sin(a), kn[1] - 0.95 * Math.cos(a)] }; };
+  const R = leg(p.thR, p.kR), Lg = leg(p.thL, p.kL);
+  const hip = [hxU, -Math.min(R.an[1], Lg.an[1]) + (p.off || 0)];
+  const sh = [hip[0] + Math.sin(p.lean * d), hip[1] + Math.cos(p.lean * d)];
+  const arm = (s, e) => { const u = [Math.sin(s * d), -Math.cos(s * d)], el = [sh[0] + 0.6 * u[0], sh[1] + 0.6 * u[1]], a = (180 - e) * d; const fd = [u[0] * Math.cos(a) - u[1] * Math.sin(a), u[0] * Math.sin(a) + u[1] * Math.cos(a)]; return { el, wr: [el[0] + 0.55 * fd[0], el[1] + 0.55 * fd[1]] }; };
+  const aR = arm(p.sR, p.eR), aL = arm(p.sL, p.eL);
+  const nose = [sh[0] + 0.55 * Math.sin(p.lean * d) + 0.1, sh[1] + 0.55 * Math.cos(p.lean * d)];
+  const lm = new Array(33).fill(null).map(() => ({ x: 0, y: 0, visibility: 0 }));
+  const nz = i => 0.0015 * Math.sin(simT * 37 + i * 5.1);
+  const put = (i, pt, dx = 0) => { lm[i] = { x: (pt[0] + dx) * L / W + nz(i), y: (gy - pt[1] * L) / H_ + nz(i + 40), visibility: 1 }; };
+  const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
+  put(0, nose); put(11, sh, -0.06); put(12, sh); put(13, aL.el, -0.06); put(14, aR.el); put(15, aL.wr, -0.06); put(16, aR.wr);
+  put(23, hip, -0.04); put(24, hip); put(25, add(hip, Lg.kn), -0.04); put(26, add(hip, R.kn)); put(27, add(hip, Lg.an), -0.04); put(28, add(hip, R.an));
+  put(31, add(hip, [Lg.an[0] + 0.3, Lg.an[1] - 0.04]), -0.04); put(32, add(hip, [R.an[0] + 0.3, R.an[1] - 0.04]));
+  return lm;
+}
+const STAND = { thR: 3, kR: 5, thL: 2, kL: 5, lean: 3, sR: 8, eR: 165, sL: 6, eL: 165, off: 0 };
+const KEYS = ['thR', 'kR', 'thL', 'kL', 'lean', 'sR', 'eR', 'sL', 'eL', 'off'];
+const mixP = (a, b, k) => { const o = {}; KEYS.forEach(x => o[x] = (a[x] || 0) + ((b[x] || 0) - (a[x] || 0)) * k); return o; };
+function runParams(t, f = 1.6) {
+  const ph = 2 * Math.PI * f * t, leg = p => ({ th: 22 + 36 * Math.sin(p), k: 22 + 75 * Math.max(0, Math.cos(p)) });
+  const R = leg(ph), Lg = leg(ph + Math.PI);
+  return { thR: R.th, kR: R.k, thL: Lg.th, kL: Lg.k, lean: 12, sR: 20 + 40 * Math.sin(ph + Math.PI), eR: 92, sL: 20 + 40 * Math.sin(ph), eL: 92, off: 0 };
+}
+function synthFor(ak, simT, W, H_) {
+  const kind = ACTS[ak].kind;
+  if (kind === 'shot') return synthShot(simT, W, H_);
+  if (ak === 'run') { const L = H_ * 0.17, span = W / L - 1.5; return fkLm(runParams(simT), 0.7 + (simT * 3) % span, L, W, H_, simT); }
+  if (ak === 'long') {
+    const L = H_ * 0.12, T = 6, t = simT % T, T0 = 1.0, FT = 0.55, g = 20.6, vy0 = g * FT / 2, vx = 8;
+    let p, hx;
+    if (t < T0) { p = runParams(t, 1.9); hx = 1 + vx * t; }
+    else if (t < T0 + FT) { const u = (t - T0) / FT, tau = t - T0; p = mixP({ thR: -15, kR: 5, thL: 80, kL: 95, lean: 8, sR: 150, eR: 160, sL: 120, eL: 150 }, { thR: 65, kR: 20, thL: 65, kL: 20, lean: 28, sR: 60, eR: 150, sL: 60, eL: 150 }, sstep(u)); p.off = vy0 * tau - 0.5 * g * tau * tau; hx = 1 + vx * t; }
+    else { const u = clamp((t - T0 - FT) / 1.4, 0, 1); hx = 1 + vx * (T0 + FT); p = u < 0.25 ? mixP({ thR: 65, kR: 20, thL: 65, kL: 20, lean: 28, sR: 60, eR: 150, sL: 60, eL: 150 }, { thR: 60, kR: 85, thL: 60, kL: 85, lean: 30, sR: 70, eR: 140, sL: 70, eL: 140 }, sstep(u / 0.25)) : mixP({ thR: 60, kR: 85, thL: 60, kL: 85, lean: 30, sR: 70, eR: 140, sL: 70, eL: 140 }, STAND, sstep((u - 0.25) / 0.75)); }
+    return fkLm(p, hx, L, W, H_, simT);
+  }
+  const L = H_ * 0.2, cx = W / L * 0.42;
+  if (ak === 'vjump') {
+    const T = 4, t = simT % T, cyc = Math.floor(simT / T), g = 20.6, FT = 0.5 - 0.04 * (cyc % 3), vy0 = g * FT / 2, depth = 45 + 10 * Math.sin(cyc * 1.3);
+    const SQ = { thR: depth, kR: depth * 2, thL: depth, kL: depth * 2, lean: 28, sR: -30, eR: 165, sL: -30, eL: 165 };
+    const UP = { thR: 2, kR: 4, thL: 2, kL: 4, lean: 4, sR: 165, eR: 170, sL: 165, eL: 170 };
+    let p;
+    if (t < 1.0) p = Object.assign({}, STAND);
+    else if (t < 1.4) p = mixP(STAND, SQ, sstep((t - 1.0) / 0.4));
+    else if (t < 1.5) p = mixP(SQ, UP, sstep((t - 1.4) / 0.1));
+    else if (t < 1.5 + FT) { const tau = t - 1.5; p = mixP(UP, { thR: 10, kR: 15, thL: 10, kL: 15, lean: 5, sR: 120, eR: 170, sL: 120, eL: 170 }, sstep(tau / FT)); p.off = vy0 * tau - 0.5 * g * tau * tau; }
+    else if (t < 1.85 + FT) p = mixP({ thR: 10, kR: 15, thL: 10, kL: 15, lean: 5, sR: 120, eR: 170, sL: 120, eL: 170 }, { thR: 40, kR: 75, thL: 40, kL: 75, lean: 22, sR: 40, eR: 160, sL: 40, eL: 160 }, sstep((t - 1.5 - FT) / 0.35));
+    else p = mixP({ thR: 40, kR: 75, thL: 40, kL: 75, lean: 22, sR: 40, eR: 160, sL: 40, eL: 160 }, STAND, sstep((t - 1.85 - FT) / 0.7));
+    return fkLm(p, cx, L, W, H_, simT);
+  }
+  if (kind === 'dribble') {
+    const ph = 2 * Math.PI * 2.4 * simT, e = 135 + 17 * Math.sin(ph);
+    return fkLm({ thR: 36, kR: 46, thL: 30, kL: 42, lean: 20, sR: 15, eR: e, sL: 15, eL: e, off: 0 }, cx, L, W, H_, simT);
+  }
+  // الوضعيات
+  const T = 5, t = simT % T;
+  const POSE = ak === 'pose_sprint' ? { thR: 62, kR: 92, thL: -6, kL: 58, lean: 40, sR: 5, eR: 170, sL: 5, eL: 170 } : { thR: 50, kR: 60, thL: 46, kL: 56, lean: 22, sR: 55, eR: 120, sL: 55, eL: 120 };
+  const k = t < 0.8 ? 0 : t < 1.3 ? sstep((t - 0.8) / 0.5) : t < 4.2 ? 1 : t < 4.8 ? 1 - sstep((t - 4.2) / 0.6) : 0;
+  return fkLm(mixP(STAND, POSE, k), cx, L, W, H_, simT);
+}
+function drawSimBase(W, H_) {
+  const g = ctx.createLinearGradient(0, 0, 0, H_); g.addColorStop(0, '#16314d'); g.addColorStop(1, '#0a1624');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H_);
+  ctx.save(); if (S.mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
+  ctx.strokeStyle = '#3a5b7a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, H_ * 0.905); ctx.lineTo(W, H_ * 0.905); ctx.stroke();
+  if (ACT().hoop || S.act === 'handball') {
+    const bx = W * 0.86; ctx.fillStyle = '#26445f';
+    if (S.act === 'handball') { ctx.strokeStyle = '#e8eef5'; ctx.lineWidth = 6; ctx.strokeRect(bx - 40, H_ * 0.55, 80, H_ * 0.35); }
+    else {
+      ctx.fillRect(bx, H_ * 0.12, 8, H_ * 0.22);
+      ctx.strokeStyle = '#ff8a3d'; ctx.lineWidth = 5; ctx.beginPath(); ctx.ellipse(bx - 34, H_ * 0.31, 32, 8, 0, 0, 6.2832); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1.5;
+      for (let i = -3; i <= 3; i++) { ctx.beginPath(); ctx.moveTo(bx - 34 + i * 9, H_ * 0.315); ctx.lineTo(bx - 34 + i * 5, H_ * 0.39); ctx.stroke(); }
+    }
+  }
+  if (S.act === 'long') { ctx.fillStyle = '#c9a66b'; ctx.fillRect(W * 0.62, H_ * 0.905, W * 0.38, H_ * 0.03); ctx.fillStyle = '#fff'; ctx.fillRect(W * 0.52, H_ * 0.9, 10, H_ * 0.012); }
+  ctx.restore();
+}
+function startSim() {
+  stopAll(); initAudio();
+  A.source = 'sim'; setCanvasSize(960, 540);
+  S.mirror = false; $('#optMirror').checked = false;
+  A.simT = 0; A.simAcc = 0; A.simLast = performance.now();
+  stageMsg('', false);
+  $('#btnSim').textContent = '⏹ إيقاف المحاكاة';
+  $('#btnRec').disabled = false;
+  setHint('وضع المحاكاة: لاعب افتراضي يؤدي المهارة المختارة لتجربة المنصة دون كاميرا.');
+  const loop = now => {
+    if (A.source !== 'sim') return;
+    A.simAcc += Math.min(0.1, (now - A.simLast) / 1000) * SIM_SPEED; A.simLast = now;
+    const dt = 1 / 30;
+    while (A.simAcc >= dt) {
+      A.simAcc -= dt; A.simT += dt;
+      drawSimBase(cv.width, cv.height);
+      ingest(synthFor(S.act, A.simT, cv.width, cv.height), A.simT * 1000, cv.width, cv.height);
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+
+/* ================= تسجيل الفيديو ================= */
+let rec = null, recChunks = [];
+function stamp() { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; }
+function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
+function toggleRec() {
+  if (rec) { rec.stop(); return; }
+  if (!cv.captureStream || !window.MediaRecorder) { toast('المتصفح لا يدعم تسجيل الفيديو.'); return; }
+  const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find(m => MediaRecorder.isTypeSupported(m));
+  try { rec = new MediaRecorder(cv.captureStream(30), mime ? { mimeType: mime } : undefined); } catch (e) { toast('تعذّر بدء التسجيل.'); return; }
+  recChunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) recChunks.push(e.data); };
+  rec.onstop = () => {
+    const type = (rec && rec.mimeType) || 'video/webm';
+    download(new Blob(recChunks, { type }), `${S.act}-${stamp()}.${type.includes('mp4') ? 'mp4' : 'webm'}`);
+    rec = null; $('#btnRec').textContent = '⏺ تسجيل الفيديو'; $('#btnRec').classList.remove('rec-on'); $('#recDot').hidden = true;
+  };
+  rec.start(1000);
+  $('#btnRec').textContent = '⏹ إنهاء التسجيل وحفظه'; $('#btnRec').classList.add('rec-on'); $('#recDot').hidden = false;
+}
+
+/* ================= التصدير والطباعة ================= */
+function exportCSV() {
+  const evs = curEvents(), a = ACT(), mets = visMetrics();
+  if (!evs.length) { toast('لا توجد محاولات للتصدير.'); return; }
+  const head = ['المهارة', 'رقم المحاولة', 'الدرجة', ...mets.map(m => `${m.label} (${m.unit.trim()})`), ...a.extras.map(x => x.label)];
+  const rows = evs.map(ev => [a.label, ev.id, evalEvent(ev).score, ...mets.map(m => ev[m.k] == null ? '' : rnd(ev[m.k] * m.scale)), ...a.extras.map(x => stripTags(x.fmt(ev[x.k])))]);
+  const csv = '﻿' + [head, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const nm = (S.name || 'session').replace(/[^\p{L}\p{N}_-]+/gu, '_');
+  download(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `${S.act}-${nm}-${stamp()}.csv`);
+}
+function fillPrintHead() {
+  $('#pAct').textContent = ACT().label;
+  $('#pName').textContent = S.name || '—';
+  $('#pDate').textContent = new Date().toLocaleDateString('ar-QA-u-nu-latn');
+  $('#pHand').textContent = S.hand === 'right' ? 'اليمنى' : 'اليسرى';
+  $('#pView').textContent = S.view === 'side' ? 'جانبية' : 'أمامية';
+}
+function doPrint() { if (!curEvents().length) { toast('لا توجد محاولات للطباعة.'); return; } fillPrintHead(); window.print(); }
+
+/* ================= المهارة المختارة ================= */
+function applyAct() {
+  const a = ACT();
+  $('#actSel').value = S.act;
+  $('#actTips').innerHTML = a.tips.map(t => `<li>${t}</li>`).join('');
+  $('#btnSnap').hidden = a.kind !== 'pose';
+  document.title = `محلل الحركة — ${a.label} | قسم التربية البدنية`;
+  renderTargets(); renderLegend(); renderAll();
+}
+function setAct(ak) {
+  if (!ACTS[ak]) return;
+  S.act = ak; saveS();
+  resetAnalysis(); A.marks = []; A.sel = curEvents().slice(-1)[0] || null; A.simT = 0;
+  applyAct();
+}
+
+/* ================= الإعدادات ================= */
+function renderTargets() {
+  const ak = S.act;
+  $('#targetsTbl').innerHTML = '<thead><tr><th>القياس</th><th>من</th><th>إلى</th></tr></thead><tbody>' + ACT().metrics.map(m => {
+    const t = tgtOf(ak, m);
+    return `<tr><td>${m.label}${m.frontOnly ? ' <span class="small muted">(أمامية فقط)</span>' : ''}</td><td><input type="number" data-k="${m.k}" data-b="min" value="${t.min}" aria-label="الحد الأدنى: ${m.label}"> ${m.unit}</td><td><input type="number" data-k="${m.k}" data-b="max" value="${t.max}" aria-label="الحد الأعلى: ${m.label}"> ${m.unit}</td></tr>`;
+  }).join('') + '</tbody>';
+}
+function bindSettings() {
+  $('#pname').value = S.name; $('#hgt').value = S.height;
+  $$('input[name=hand]').forEach(r => r.checked = r.value === S.hand);
+  $$('input[name=view]').forEach(r => r.checked = r.value === S.view);
+  $$('input[name=display]').forEach(r => r.checked = r.value === S.display);
+  $('#modelSel').value = S.model; $('#optSound').checked = S.sound; $('#optMirror').checked = S.mirror;
+  $('#pname').addEventListener('input', e => { S.name = e.target.value.slice(0, 40); saveS(); });
+  $('#hgt').addEventListener('input', e => { S.height = e.target.value; saveS(); renderAll(); });
+  for (const n of ['hand', 'view', 'display']) $$(`input[name=${n}]`).forEach(r => r.addEventListener('change', () => { if (r.checked) { S[n] = r.value; saveS(); if (n === 'hand') resetAnalysis(); if (n === 'view') { renderTargets(); renderAll(); } } }));
+  $('#modelSel').addEventListener('change', async e => { S.model = e.target.value; saveS(); if (A.source === 'camera' || A.source === 'file') { A.loopOn = false; try { await ensureModel(); } catch (err) { modelFailed(err); return; } stageMsg('', false); startLoop(); } });
+  $('#optSound').addEventListener('change', e => { S.sound = e.target.checked; saveS(); initAudio(); });
+  $('#optMirror').addEventListener('change', e => { S.mirror = e.target.checked; saveS(); });
+  $('#targetsTbl').addEventListener('change', e => {
+    const i = e.target; if (!i.dataset.k) return;
+    const m = ACT().metrics.find(x => x.k === i.dataset.k), cur = Object.assign({}, tgtOf(S.act, m)); cur[i.dataset.b] = +i.value;
+    if (i.value === '' || isNaN(cur.min) || isNaN(cur.max) || cur.min > cur.max) { toast('تحقق من القيم: «من» يجب ألا تتجاوز «إلى».'); renderTargets(); return; }
+    S.targets[S.act + '.' + m.k] = cur; saveS(); renderAll();
+  });
+  $('#btnResetTargets').addEventListener('click', () => { Object.keys(S.targets).forEach(k => { if (k.startsWith(S.act + '.')) delete S.targets[k]; }); saveS(); renderTargets(); renderAll(); });
+}
+
+/* ================= الأزرار ================= */
+$('#actSel').addEventListener('change', e => setAct(e.target.value));
+$('#btnCam').addEventListener('click', () => { if (A.source === 'camera') stopAll(); else startCamera(); });
+$('#btnSim').addEventListener('click', () => { if (A.source === 'sim') stopAll(); else startSim(); });
+$('#btnFile').addEventListener('click', () => $('#fileIn').click());
+$('#fileIn').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; openFile(f); });
+$('#btnSnap').addEventListener('click', () => {
+  if (!A.lastFeat || !D.capture) { toast('لا يظهر لاعب واضح في الإطار.'); return; }
+  const r = D.capture(A.lastFeat.t); if (r) onEvent(r); else toast('تعذّر قياس الركبتين؛ ظهّر الرجلين كاملتين.');
+});
+$('#btnRec').addEventListener('click', toggleRec);
+$('#btnCsv').addEventListener('click', exportCSV);
+$('#btnPrint').addEventListener('click', doPrint);
+$('#camSel').addEventListener('change', () => { if (A.source === 'camera') startCamera(); });
+$('#btnClear').addEventListener('click', () => {
+  if (!curEvents().length) return;
+  if (!confirm(`سيتم حذف جميع ${ACT().evs} في هذه الجلسة. هل أنت متأكد؟`)) return;
+  A.events = A.events.filter(e => e.ak !== S.act); A.sel = null; A.marks = []; renderAll();
+});
+const pickRow = tr => { const ev = curEvents().find(x => x.id === +tr.dataset.id); if (ev) { A.sel = ev; renderDetail(); renderTable(); } };
+$('#shotsBody').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (tr) pickRow(tr); });
+$('#shotsBody').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const tr = e.target.closest('tr[data-id]'); if (tr) { e.preventDefault(); pickRow(tr); } } });
+$('#tPlay').addEventListener('click', () => { if (vid.ended) { vid.currentTime = 0; resetAnalysis(); } if (vid.paused) vid.play().then(() => { if (A.source === 'file' && !A.loopOn) startLoop(); }).catch(() => {}); else vid.pause(); });
+$('#tSpeed').addEventListener('change', e => { vid.playbackRate = +e.target.value; });
+$('#tSeek').addEventListener('input', e => { if (vid.duration) { vid.currentTime = (+e.target.value / 1000) * vid.duration; resetAnalysis(); } });
+vid.addEventListener('timeupdate', () => {
+  if (A.source !== 'file' || !vid.duration) return;
+  $('#tSeek').value = rnd(vid.currentTime / vid.duration * 1000);
+  const fm = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  $('#tTime').textContent = `${fm(vid.currentTime)} / ${fm(vid.duration)}`;
+});
+vid.addEventListener('seeked', () => { if (A.source === 'file' && vid.paused && A.lmk) { try { processVideoFrame({ mediaTime: vid.currentTime }); } catch (e) {} } });
+vid.addEventListener('ended', () => { if (A.source === 'file') toast('انتهى الفيديو. اضغط ⏯ للإعادة.'); });
+window.addEventListener('resize', () => drawChart(A.lastT || 0));
+window.addEventListener('beforeprint', fillPrintHead);
+
+D = makeDet();
+bindSettings();
+applyAct();
+resetLive();
+window.__app = { A, S, evalEvent, setAct, ACTS };
+})();
+</script>
+</body>
+</html>
